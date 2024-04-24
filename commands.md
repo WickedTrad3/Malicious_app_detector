@@ -21,4 +21,11 @@ git checkout <branch>
 git rm -r --cached <name of folder/file>
 
 # see status of modified
-git status
+git status 
+
+# used to build docker image off docker file located in repo
+docker build -t <image name> .
+
+# create container from image
+docker container create -i -t --name <container> <>
+

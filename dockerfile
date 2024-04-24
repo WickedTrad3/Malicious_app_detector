@@ -5,4 +5,7 @@ RUN echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/00-docker
 
 WORKDIR /malicious_app_detector
 
-RUN git clone https://github.com/skylot/jadx.git
+RUN apt-get update
+RUN apt-get -y install git
+
+RUN git clone -n https://github.com/skylot/jadx.git
