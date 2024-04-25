@@ -34,3 +34,14 @@
 
 ## create container from image
 **docker container create -i -t --name <container> <>**
+** docker container create -i -t --name <container> <> **
+
+# see status of modified
+git status 
+
+# used to build docker image off docker file located in repo
+docker build -t <image name> .
+
+# create container from image
+docker container create -i -t --name <container> <>
+
