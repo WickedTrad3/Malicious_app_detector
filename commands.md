@@ -45,3 +45,5 @@ docker build -t <image name> .
 # create container from image
 docker container create -i -t --name <container> <>
 
+# TEST
+test
