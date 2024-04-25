@@ -1,3 +1,10 @@
+## set email to your account
+** git config --global user.email "email" **
+
+## set name to your account
+** git config --global user.name "name" **
+
+
 ## adds files for commit 
 ** git add . **
 ## saves the changes made to a save
