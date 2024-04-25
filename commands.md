@@ -1,37 +1,36 @@
 ## set email to your account
-** git config --global user.email "email" **
+**git config --global user.email "email"**
 
 ## set name to your account
-** git config --global user.name "name" **
+**git config --global user.name "name"**
 
 
 ## adds files for commit 
-** git add . **
+**git add .**
 ## saves the changes made to a save
-** git commit -m "name of commit" **
+**git commit -m "name of commit"**
 
 ## add commits to remote repository
-** git push -u \<remote name\> \<branch name\> **
+**git push -u \<remote name\> \<branch name\>**
 
 ## grab latest version from remote repository and merge with current local repo
-** git pull <remote name> **
+**git pull <remote name>**
 
 ## create new branch 
 ## create when working on a section
-** git branch <name> **
+**git branch <name>**
 
 ## go to branch for pulling and pushing
-** git checkout <branch> **
+**git checkout <branch>**
 
 ## remove cache in case of adding of file that shouldnt be commited
-** git rm -r --cached <name of folder/file> **
+**git rm -r --cached <name of folder/file>**
 
 ## see status of modified
-** git status **
+**git status**
 
 ## used to build docker image off docker file located in repo
-** docker build -t <image name> . **
+**docker build -t <image name> .**
 
 ## create container from image
-** docker container create -i -t --name <container> <> **
-
+**docker container create -i -t --name <container> <>**
