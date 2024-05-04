@@ -1,3 +1,4 @@
+#run in linux
 FROM ubuntu:22.04
 #reduces size by not installing reccomended images
 RUN echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/00-docker
