@@ -44,3 +44,6 @@ docker build -t <image name> .
 
 # create container from image
 docker container create -i -t --name <container> <>
+
+# how to run jadx
+go to jadx dir, run jadx -d (location of dir to place it in)
