@@ -19,6 +19,7 @@ import argparse
 def check_folders(directory):
     
     for path, folders, files in os.walk(directory):
+        print("current path: " + path)
     # Open file
     # Open folder
         for filename in files:
@@ -34,7 +35,8 @@ def check_folders(directory):
                     if (file_check.suspicious):
                         json_update(file_check.__dict__)
                     else:
-                        print("Not suspicious: " + file_check.file_name)
+                        pass
+                        #print("Not suspicious: " + file_check.file_name)
 
                     #print(e)
                     #print(path)
@@ -66,8 +68,17 @@ def json_create():
         }
 
 }
+
+def create_parser():
+    parser = argparse.ArgumentParser(description="Command-line Todo List App")
+    parser.add_argument("-a", "--add", metavar="", help="Add a new task")
+    parser.add_argument("-l", "--list", action="store_true", help="List all tasks")
+    parser.add_argument("-r", "--remove", metavar="", help="Remove a task by index")
+    return parser
 '''
 def main():
+    #parser = create_parser()
+    #args = parser.parse_args()
     directory = input("enter directory of decompiled apk: ")
     json_create()
     check_folders(directory)

@@ -11,9 +11,9 @@ class File_read:
         self.file_path = file_path
         #unknown if need md5
         self.md5 = ""
-        self.suspicious = False
+        self.is_flagged = False
         self.flagged = {
-            "suspicious_permissions": [],
+            "permissions": [],
             "API": {
                 "requestWindowFeature":[],
                 "Calendar":[],
@@ -30,30 +30,29 @@ class File_read:
 
     def check_strings(self):
         file_name,file_extension = self.file_name.split(".")
-        
-        if (file_extension == "xml"):
-            if (file_name == "AndroidManifest"):
-                self.check_permissions()
+        if (file_name == "AndroidManifest"):
+            self.check_permissions()
             #yet to seperate into different types of rule sets
             #intents
         if (file_extension == "java"):
             self.check_java()
 
     def check_permissions(self):
-        with open(self.file_path+"\\"+self.file_name) as fp:
+        self.is_flagged = True
+        with open(os.path.join(self.file_path, self.file_name), encoding="utf8") as fp:
             intent_found = False
             intent = ""
             for line in fp:
                 if ("permission" in line):
                     #json
-                    self.flagged["suspicious_permissions"].append(line)
+                    self.flagged["permissions"].append(line)
                 elif ("<intent" in line):
                     intent_found = True
                     intent+=line.strip()
                 elif ("</intent" in line):
                     intent_found = False
                     intent+=line.strip()
-                    self.flagged["intent"] = intent
+                    self.flagged["intent"].append(intent)
                     intent = ""
                 elif (intent_found):
                     intent+=line.strip()
@@ -90,8 +89,8 @@ class File_read:
                 if ("Intent" in line):
                     self.flagged["intent"].append(line.strip())
                     #intent_name = line.split("=")[0].split()[1]
-                    
-                    function_flagged = True
+                    if (is_function):
+                        function_flagged = True
                 #find where intent is being used in
                 #elif (intent_name in line and intent_name !=""):
                     #self.flagged["intent"].append(line)
