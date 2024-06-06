@@ -1,7 +1,8 @@
 import json
 import javalang
 import os
-
+#dont care about false positives
+#narrow intent - (low prio)
 class File_read:
     #havent decided wether to make this one class for all files or one for each file
     #leaning to one class per folder
@@ -36,7 +37,7 @@ class File_read:
             #intents
         if (file_extension == "java"):
             self.check_java()
-
+    #change to flag a few permissions
     def check_permissions(self):
         self.is_flagged = True
         with open(os.path.join(self.file_path, self.file_name), encoding="utf8") as fp:
@@ -56,7 +57,7 @@ class File_read:
                     intent = ""
                 elif (intent_found):
                     intent+=line.strip()
-
+    #how check if obfuscated
     def check_java(self):
         intent_name = ""
         function_name = ""
@@ -70,8 +71,7 @@ class File_read:
                 
                 domainfound = [element for element in top_domain_name if element in line]
                 #look for all intents
-                #does not work as well due to classes existing
-                # ignores classes
+                #does not account for intents existing outside method
                 if ("{" in line and "class" not in line):
                     open_brackets +=1
                     is_function = True
@@ -83,9 +83,10 @@ class File_read:
                     if (close_brackets == open_brackets and function_flagged):
                         self.flagged["functions"].append(function_name)
                         function_name = ""
-                        self.suspicious = True
+                        self.is_flagged = True
                         function_flagged = False
                         is_function = False
+                #flag for all?
                 if ("Intent" in line):
                     self.flagged["intent"].append(line.strip())
                     #intent_name = line.split("=")[0].split()[1]
@@ -100,10 +101,14 @@ class File_read:
                 #other methods include json strings and piecing together
                 #DGA can be done to generate its own domain name to access
                 #.xyz,.live,.com,.store,.info,.top,.net
+                #wget,
+                #try get hierachy of permissions used for url usage
                 elif ("http:" in line and len(domainfound)):
                     self.flagged["url"].append(line.lstrip())
                     
                     function_flagged = True
+                #sms, system, click need account for caps
+
                 #requestWindowFeature
                 #used to load other apps, and can be used to read info from other apps
                 elif ("requestWindowFeature" in line):
@@ -130,6 +135,9 @@ class File_read:
                     function_flagged = True
                 if (is_function):
                     function_name +=line.lstrip()
+                #add sideloading
+
+                #add writing of files/file access
 
                 #not possible to detect sideloading without comparing apk to google play store
 '''

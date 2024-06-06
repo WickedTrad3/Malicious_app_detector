@@ -15,6 +15,8 @@ import argparse
 #must decompile before any scanning
 #malwh -d <filename> -o <output file> (decompile into file directory, otherwise write into temp)
 
+#how to tell if obfuscated string or not
+
 #all assuming in java
 def check_folders(directory):
     
@@ -32,7 +34,7 @@ def check_folders(directory):
                     
                     file_check = rules.File_read(filename, path)
                     file_check.check_strings()
-                    if (file_check.suspicious):
+                    if (file_check.is_flagged):
                         json_update(file_check.__dict__)
                     else:
                         pass
