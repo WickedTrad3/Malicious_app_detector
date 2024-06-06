@@ -1,5 +1,4 @@
 
-set /P apk = enter apk path to decompile:
 
-.\jadx\bin\jadx.bat --output-dir .\ %apk%
-.\apktool\apktool d %apk%
+call .\bin\jadx  %1 --output-dir .\jadx-decompiled
+call .\apktool d %1 -f -p .\apktool-decompiled

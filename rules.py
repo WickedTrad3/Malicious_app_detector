@@ -1,4 +1,6 @@
 import json
+import javalang
+import os
 
 class File_read:
     #havent decided wether to make this one class for all files or one for each file
@@ -9,17 +11,24 @@ class File_read:
         self.file_path = file_path
         #unknown if need md5
         self.md5 = ""
-        self.name_suspicious = False
+        self.suspicious = False
         self.flagged = {
-            "name":self.file_name,
             "suspicious_permissions": [],
-            "API": [],
+            "API": {
+                "requestWindowFeature":[],
+                "Calendar":[],
+                "System":[],
+                "sms":[],
+                "click":[],
+                "accessibility":[]
+            },
             "intent": [],
             "url": [],
-            "functions":[]
+            "functions":[
+            ]
         }
 
-    def check_rule_set(self):
+    def check_strings(self):
         file_name,file_extension = self.file_name.split(".")
         
         if (file_extension == "xml"):
@@ -55,47 +64,73 @@ class File_read:
         function_flagged = False
         open_brackets = 0
         close_brackets = 0
+        is_function = False
         top_domain_name = [".xyz",'.live',".com",".store",".info",".top",".net"]
-        with open(self.file_path+"\\"+self.file_name) as fp:
+        with open(os.path.join(self.file_path, self.file_name), encoding="utf8") as fp:
             for line in fp:
+                
                 domainfound = [element for element in top_domain_name if element in line]
                 #look for all intents
-                if ("{" in line):
+                #does not work as well due to classes existing
+                # ignores classes
+                if ("{" in line and "class" not in line):
                     open_brackets +=1
+                    is_function = True
                 if ("}" in line):
                     close_brackets +=1
+                    function_name +=line.strip()
+                    if (close_brackets == open_brackets):
+                        is_function = False
                     if (close_brackets == open_brackets and function_flagged):
                         self.flagged["functions"].append(function_name)
                         function_name = ""
+                        self.suspicious = True
                         function_flagged = False
+                        is_function = False
                 if ("Intent" in line):
-                    self.flagged["intent"].append(line)
-                    intent_name = line.split("=")[0].split()[1]
-                    function_name +=""
+                    self.flagged["intent"].append(line.strip())
+                    #intent_name = line.split("=")[0].split()[1]
+                    
                     function_flagged = True
                 #find where intent is being used in
-                elif (intent_name in line):
-                    self.flagged["intent"].append(line)
-                    function_flagged = True
+                #elif (intent_name in line and intent_name !=""):
+                    #self.flagged["intent"].append(line)
+                    #function_flagged = True
                 #url may be in intent
                 #only obtains if directly http
                 #other methods include json strings and piecing together
                 #DGA can be done to generate its own domain name to access
                 #.xyz,.live,.com,.store,.info,.top,.net
                 elif ("http:" in line and len(domainfound)):
-                    self.flagged["url"].append(line)
+                    self.flagged["url"].append(line.lstrip())
+                    
+                    function_flagged = True
                 #requestWindowFeature
                 #used to load other apps, and can be used to read info from other apps
                 elif ("requestWindowFeature" in line):
+                    self.flagged["API"]["requestWindowFeature"].append(line.strip())
                     function_flagged = True
                 #flag calender
                 elif ("Calendar" in line):
+                    self.flagged["API"]["Calendar"].append(line.strip())
                     function_flagged = True
                 #flag system
-
-                #find where permissions are being used
-                elif ("" in line):
-                    
+                elif ("System" in line):
+                    self.flagged["API"]["System"].append(line.strip())
+                    function_flagged = True
+                elif ("sms" in line):
+                    self.flagged["API"]["sms"].append(line.strip())
+                    function_flagged = True
+                
+                elif ("click" in line):
+                    self.flagged["API"]["click"].append(line.strip())
+                    function_flagged = True
+                #keylogging, dk if accessibility is correct
+                elif ("accessbility" in line):
+                    self.flagged["API"]["accessbility"].append(line.strip())
+                    function_flagged = True
+                if (is_function):
+                    function_name +=line.lstrip()
 
                 #not possible to detect sideloading without comparing apk to google play store
 '''
