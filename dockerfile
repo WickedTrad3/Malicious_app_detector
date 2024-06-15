@@ -8,3 +8,4 @@ COPY ["decompile.sh", "apktool/", "jadx/", "decompile.sh", "./"]
 RUN apt-get update && apt install default-jdk -y
 #COPY /jadx/bin ./jadx
 #COPY /apktool ./apktool
+#download python and dependencies e.g argparse

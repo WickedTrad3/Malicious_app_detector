@@ -20,7 +20,7 @@ import subprocess
 #how to tell if obfuscated string or not
 
 #all assuming in java
-def check_folders(directory, permissions_check = False, url_check = False, apis_check = False, extra_check = False):
+def check_folders(directory, permissions_check = False, url_check = False, apis_check = False, intent_check = False, logging_check = False, extra_check = False):
     
     for path, folders, files in os.walk(directory):
         print("current path: " + path)
@@ -35,9 +35,11 @@ def check_folders(directory, permissions_check = False, url_check = False, apis_
 
                     
                     file_check = rules.File_read(filename, path)
-                    file_check.check_strings(permissions_check, url_check, apis_check, extra_check)
+                    file_check.check_strings(permissions_check, url_check, apis_check, intent_check, logging_check, extra_check)
                     if (file_check.is_flagged):
+                        #json create
                         json_update(file_check.__dict__)
+                        
                     else:
                         pass
                         #print("Not suspicious: " + file_check.file_name)
@@ -50,7 +52,10 @@ def check_folders(directory, permissions_check = False, url_check = False, apis_
 def json_update(file_info):
     
     with open("flagged_files.json", "r") as outfile:
-        data = json.load(outfile)
+        try:
+            data = json.load(outfile)
+        except:
+            data = []
     data.append(file_info)
     with open("flagged_files.json", "w+") as outfile:
         data = json.dump(data, outfile, indent = 1)
@@ -101,19 +106,23 @@ parser.add_argument("-vv", "--very-verbose", help="Enable very verbose output fo
 parser.add_argument("-p", "--permissions", help="Decompile the APK to a specified output file.", default = False, required=False, action = "store_true")
 parser.add_argument("-u", "--urls", help="List all URLs found in the APK.", default = False, required=False, action = "store_true")
 parser.add_argument("-a", "--apis", help="List all APIs used in the APK.", default = False, required=False, action = "store_true")
+parser.add_argument("-i", "--intents", help="List all intents used in the APK.", default = False, required=False, action = "store_true")
+parser.add_argument("-l", "--logging", help="List all logging done in the APK.", default = False, required=False, action = "store_true")
 parser.add_argument("-e", "--extra", help="List all APIs used in the APK.", default = False, required=False, action = "store_true")
 #mutually exclusive group to seperate decompile and other perms
 args = parser.parse_args()
 cwd = os.path.dirname(__file__)
+non_verbose_mode = True
+
 if (args.decompile):
     decompile(args.path, cwd)
-elif (args.very_verbose):
-    check_folders(args.path)
-elif (args.urls):
-    check_folders(args.path)
-elif (args.permissions):
-    check_folders(args.path)
+if (args.very_verbose):
+    check_folders(args.path,True,True,True,True,True,True)
+    non_verbose_mode = False
+elif (non_verbose_mode):
+    print("non verbose mode")
+    check_folders(args.path, args.permissions, args.urls, args.apis, args.intents, args.logging, args.extra)
 
-
-directory = Path(args.path)
-main()
+#add pretty tables
+#later
+#add generation of report
