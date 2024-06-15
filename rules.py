@@ -17,6 +17,7 @@ class File_read:
             "permissions": [],
             "API": {
                 "requestWindowFeature":[],
+                "PackageManager": [],
                 "Calendar":[],
                 "System":[],
                 "sms":[],
@@ -29,24 +30,42 @@ class File_read:
             ]
         }
 
-    def check_strings(self):
+    def check_strings(self, permissions_check, url_check, apis_check, extra_check):
         file_name,file_extension = self.file_name.split(".")
-        if (file_name == "AndroidManifest"):
+        if (file_name == "AndroidManifest" and permissions_check):
             self.check_permissions()
             #yet to seperate into different types of rule sets
             #intents
         if (file_extension == "java"):
-            self.check_java()
+            self.check_java(url_check, apis_check, extra_check)
     #change to flag a few permissions
     def check_permissions(self):
         self.is_flagged = True
         with open(os.path.join(self.file_path, self.file_name), encoding="utf8") as fp:
             intent_found = False
             intent = ""
+            #copy from amadeus
+            sus_perms = ["READ_PHONE_STATE", 
+                         "SEND_SMS", 
+                         "READ_SMS", 
+                         "WRITE_SMS", 
+                         "RECORD_AUDIO", 
+                         "ACCESS_NETWORK_STATE", 
+                         "INTERNET", 
+                         "RECEIVE_BOOT_COMPLETED", 
+                         "ACCESS_FINE_LOCATION",
+                         "READ_CONTACTS",
+                         "WRITE_EXTERNAL_STORAGE",
+                         "CAMERA",
+                         "READ_CALENDAR",
+                         "CALL_PHONE"
+                         ]
             for line in fp:
+                perms_found = [element for element in sus_perms if element.lower() in line.lower()]
                 if ("permission" in line):
                     #json
-                    self.flagged["permissions"].append(line)
+                    if (len(perms_found)==0):
+                        self.flagged["permissions"].append(line)
                 elif ("<intent" in line):
                     intent_found = True
                     intent+=line.strip()
@@ -58,7 +77,9 @@ class File_read:
                 elif (intent_found):
                     intent+=line.strip()
     #how check if obfuscated
-    def check_java(self):
+    #redo to map to cli
+    #integrate intents into other section e.g url, api
+    def check_java(self,url_check, apis_check, extra_check):
         intent_name = ""
         function_name = ""
         function_flagged = False
@@ -68,8 +89,17 @@ class File_read:
         top_domain_name = [".xyz",'.live',".com",".store",".info",".top",".net"]
         with open(os.path.join(self.file_path, self.file_name), encoding="utf8") as fp:
             for line in fp:
-                
-                domainfound = [element for element in top_domain_name if element in line]
+                API= {
+                "requestWindowFeature":[],
+                "PackageManager": [],
+                "splicing": [],
+                "Calendar":[],
+                "System":[],
+                "sms":[],
+                "click":[],
+                "accessibility":[]
+                },  
+                domainfound = [element for element in top_domain_name if element.lower() in line.lower()]
                 #look for all intents
                 #does not account for intents existing outside method
                 if ("{" in line and "class" not in line):
@@ -87,7 +117,7 @@ class File_read:
                         function_flagged = False
                         is_function = False
                 #flag for all?
-                if ("Intent" in line):
+                if ("Intent".lower() in line.lower()):
                     self.flagged["intent"].append(line.strip())
                     #intent_name = line.split("=")[0].split()[1]
                     if (is_function):
@@ -103,7 +133,7 @@ class File_read:
                 #.xyz,.live,.com,.store,.info,.top,.net
                 #wget,
                 #try get hierachy of permissions used for url usage
-                elif ("http:" in line and len(domainfound)):
+                elif ("http:".lower() in line.lower() and len(domainfound)):
                     self.flagged["url"].append(line.lstrip())
                     
                     function_flagged = True
@@ -111,27 +141,42 @@ class File_read:
 
                 #requestWindowFeature
                 #used to load other apps, and can be used to read info from other apps
-                elif ("requestWindowFeature" in line):
-                    self.flagged["API"]["requestWindowFeature"].append(line.strip())
+                elif ("requestWindowFeature".lower() in line.lower()):
+                    #self.flagged["API"]["requestWindowFeature"].append(line.strip())
+                    API["requestWindowFeature"].append(line.strip())
                     function_flagged = True
                 #flag calender
                 elif ("Calendar" in line):
-                    self.flagged["API"]["Calendar"].append(line.strip())
+                    #self.flagged["API"]["Calendar"].append(line.strip())
+                    API["Calendar"].append(line.strip())
                     function_flagged = True
                 #flag system
-                elif ("System" in line):
-                    self.flagged["API"]["System"].append(line.strip())
+                elif ("System".lower() in line.lower()):
+                    #self.flagged["API"]["System"].append(line.strip())
+                    API["System"].append(line.strip())
                     function_flagged = True
-                elif ("sms" in line):
-                    self.flagged["API"]["sms"].append(line.strip())
+                elif ("sms".lower() in line.lower()):
+                    #self.flagged["API"]["sms"].append(line.strip())
+                    API["sms"].append(line.strip())
                     function_flagged = True
                 
                 elif ("click" in line):
-                    self.flagged["API"]["click"].append(line.strip())
+                    #self.flagged["API"]["click"].append(line.strip())
+                    API["click"].append(line.strip())
                     function_flagged = True
                 #keylogging, dk if accessibility is correct
-                elif ("accessbility" in line):
-                    self.flagged["API"]["accessbility"].append(line.strip())
+                elif ("accessbility".lower() in line.lower()):
+                    #self.flagged["API"]["accessbility"].append(line.strip())
+                    API["accessibility"].append(line.strip())
+                    function_flagged = True
+                elif ("PackageManager".lower() in line.lower()):
+                    #self.flagged["API"]["PackageManager"].append(line.strip())
+                    API["PackageManager"].append(line.strip())
+                    function_flagged = True
+                #check for splicing just in case values are semi obfuscated
+                elif ("valueOf".lower() in line or "concat".lower() in line.lower()):
+                    #self.flagged["API"]["splicing"].append(line.strip())
+                    API["splicing"].append(line.strip())
                     function_flagged = True
                 if (is_function):
                     function_name +=line.lstrip()
