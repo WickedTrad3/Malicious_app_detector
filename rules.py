@@ -32,7 +32,10 @@ class File_read:
                 "Android":[]
             },
             "logging": [],
-            "intent": [],
+            "intent": {
+                "email":[],
+                "others":[]
+            },
             #rename to internet use
             #add use of 
             "url": [],
@@ -92,9 +95,10 @@ class File_read:
     #redo to map to cli
     #integrate intents into other section e.g url, api
     def check_java(self, url_check, apis_check, intent_check, logging_check, extra_check):
-        intent_name = ""
+        intent_list = []
         function_name = ""
         function_flagged = False
+        not_email_intent_bool = True
         open_brackets = 0
         close_brackets = 0
         is_function = False
@@ -112,15 +116,28 @@ class File_read:
                     function_name +=line.strip()
                     if (close_brackets == open_brackets):
                         is_function = False
+                        not_email_intent_bool = True
                     if (close_brackets == open_brackets and function_flagged):
                         self.flagged["functions"].append(function_name)
                         function_name = ""
                         self.is_flagged = True
                         function_flagged = False
                         is_function = False
+                        
+                        if (not_email_intent_bool == False):
+                            self.flagged["intent"]["mail"].extend(intent_list)
+                            not_email_intent_bool = True
                 #flag for all?
                 if ("Intent".lower() in line.lower() and intent_check):
-                    self.flagged["intent"].append(line.strip())
+                    
+
+                    if ("mail".lower() in line.lower() or "sendto".lower() in line.lower()):
+                        #self.flagged["intent"]["mail"].append(line.strip())
+                        intent_list.append(line.strip())
+                        not_email_intent_bool =False
+                    elif (not_email_intent_bool):
+                        self.flagged["intent"]["others"].append(line.strip())
+                        
                     #intent_name = line.split("=")[0].split()[1]
                     if (is_function):
                         function_flagged = True

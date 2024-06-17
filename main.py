@@ -6,7 +6,7 @@ import argparse
 from sys import platform
 import subprocess
 
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #malwh --help
 #malwh -vv (everything)
