@@ -85,7 +85,7 @@ class File_read:
                 elif ("</intent" in line):
                     intent_found = False
                     intent+=line.strip()
-                    self.flagged["intent"].append(intent)
+                    self.flagged["intent"]["others"].append(intent)
                     intent = ""
                 elif (intent_found):
                     intent+=line.strip()

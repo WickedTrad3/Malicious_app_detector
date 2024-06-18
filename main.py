@@ -135,8 +135,7 @@ elif (non_verbose_mode):
 
 #add pretty tables
 table = PrettyTable()
-table.padding_width = 0
-table.vrules = "FRAME"
+table.padding_width = 4
 table.set_style(MARKDOWN)
 with open("flagged_files.json", "r") as outfile:
     data = json.load(outfile)
@@ -144,12 +143,19 @@ data["AndroidManifest.xml"]
 #table.field_names = ["Permissions"]
 table.add_column("Permissions",data["AndroidManifest.xml"]["flagged"]["permissions"])
 print("Android Manifest permissions and intents found")
-print(table)
+
+perms_table = table.get_string()
 table.clear()
+
 #data["AndroidManifest.xml"]["flagged"]["intent"]
-table.add_column("Intents",data["AndroidManifest.xml"]["flagged"]["intent"])
-print(table)
+table.add_column("Email",data["AndroidManifest.xml"]["flagged"]["intent"]["email"])
+table.add_column("Others",data["AndroidManifest.xml"]["flagged"]["intent"]["others"])
+
+table_data = perms_table + "\n\n" + table.get_string()
+with open('Android_manifest_examined.txt', 'w') as f:
+    f.write(table_data)
 table.clear()
+
 data.pop("AndroidManifest.xml")
 file_names = data.keys()
 for file_name in file_names:
@@ -164,6 +170,20 @@ for file_name in file_names:
     Android = data[file_name]["flagged"]["API"]["Android"]
     for (requestWindowFeature_line, PackageManager_line, Calendar_line, System_line, sms_line, click_line, accessibility_line, Android_line) in itertools.zip_longest(requestWindowFeature, PackageManager, Calendar, System, sms, click, accessibility, Android):
         table.add_row([file_name, requestWindowFeature_line, PackageManager_line, Calendar_line, System_line, sms_line, click_line, accessibility_line, Android_line])
-print(table)
+
+table_data = table.get_string()
+with open('API_examined.txt', 'w') as f:
+    f.write(table_data)
+table.clear()
+
+for file_name in file_names:
+    table.field_names = ["File_name", "url", "extra"]
+    url = data[file_name]["flagged"]["url"]
+    extra = data[file_name]["flagged"]["extra"]
+
+table_data = table.get_string()
+with open('others.txt', 'w') as f:
+    f.write(table_data)
+table.clear()
 #late
 #add generation of report
