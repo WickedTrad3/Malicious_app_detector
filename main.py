@@ -1,12 +1,15 @@
+#!/usr/bin/env python3
 import os
 from pathlib import Path
 import rules
 import json
 import argparse
-from sys import platform
+import sys
 import subprocess
+from prettytable import PrettyTable, MARKDOWN
+import itertools
 
-#!/usr/bin/env python3
+
 
 #malwh --help
 #malwh -vv (everything)
@@ -17,13 +20,13 @@ import subprocess
 #must decompile before any scanning
 #malwh -d <filename> -o <output file> (decompile into file directory, otherwise write into temp)
 
-#how to tell if obfuscated string or not
+#how to tell if obfuscated string or notimport itertools 
 
 #all assuming in java
-def check_folders(directory, permissions_check = False, url_check = False, apis_check = False, intent_check = False, logging_check = False, extra_check = False):
-    
+def check_folders(directory, cwd, permissions_check = False, url_check = False, apis_check = False, intent_check = False, logging_check = False, extra_check = False):
+    first_iteration = True
     for path, folders, files in os.walk(directory):
-        print("current path: " + path)
+        
     # Open file
     # Open folder
         for filename in files:
@@ -37,6 +40,11 @@ def check_folders(directory, permissions_check = False, url_check = False, apis_
                     file_check = rules.File_read(filename, path)
                     file_check.check_strings(permissions_check, url_check, apis_check, intent_check, logging_check, extra_check)
                     if (file_check.is_flagged):
+                        my_file = Path(cwd+"/flagged_files.json")
+                        if (not my_file.is_file() or first_iteration):
+                            json_create()
+                            first_iteration = False
+                            
                         #json create
                         json_update(file_check.__dict__)
                         
@@ -52,23 +60,25 @@ def check_folders(directory, permissions_check = False, url_check = False, apis_
 def json_update(file_info):
     
     with open("flagged_files.json", "r") as outfile:
-        try:
-            data = json.load(outfile)
-        except:
-            data = []
-    data.append(file_info)
+        #try:
+        data = json.load(outfile)
+        #except:
+            #data = []
+    file_name = file_info.pop("file_name")
+    data[file_name] = file_info
     with open("flagged_files.json", "w+") as outfile:
         data = json.dump(data, outfile, indent = 1)
 
 def json_create():
     with open("flagged_files.json", "w+") as outfile:
-        data = json.dump([], outfile)
+        data = json.dump({}, outfile)
 
 def decompile(directory, cwd):
-    if (platform == "linux" or platform == "linux2"):
+    if (sys.platform == "linux" or sys.platform == "linux2"):
 
-        process = subprocess.Popen([os.path.normpath(cwd + "decompile.sh"), directory], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen([os.path.normpath(cwd + "/decompile.sh"), directory, cwd], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait() # Wait for process to complete.
+        print("finished")
 
     elif platform == "win32":
         process = subprocess.Popen([os.path.normpath(cwd + "decompile.bat"), directory], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -113,16 +123,47 @@ parser.add_argument("-e", "--extra", help="List all APIs used in the APK.", defa
 args = parser.parse_args()
 cwd = os.path.dirname(__file__)
 non_verbose_mode = True
-
-if (args.decompile):
+if (len(sys.argv) <2):
+    print("Error: No options specified. Use 'malwh --help' to see available commands and options.")
+elif (args.decompile):
     decompile(args.path, cwd)
 if (args.very_verbose):
-    check_folders(args.path,True,True,True,True,True,True)
+    check_folders(args.path,cwd,True,True,True,True,True,True)
     non_verbose_mode = False
 elif (non_verbose_mode):
-    print("non verbose mode")
-    check_folders(args.path, args.permissions, args.urls, args.apis, args.intents, args.logging, args.extra)
+    check_folders(args.path, cwd, args.permissions, args.urls, args.apis, args.intents, args.logging, args.extra)
 
 #add pretty tables
-#later
+table = PrettyTable()
+table.padding_width = 0
+table.vrules = "FRAME"
+table.set_style(MARKDOWN)
+with open("flagged_files.json", "r") as outfile:
+    data = json.load(outfile)
+data["AndroidManifest.xml"]
+#table.field_names = ["Permissions"]
+table.add_column("Permissions",data["AndroidManifest.xml"]["flagged"]["permissions"])
+print("Android Manifest permissions and intents found")
+print(table)
+table.clear()
+#data["AndroidManifest.xml"]["flagged"]["intent"]
+table.add_column("Intents",data["AndroidManifest.xml"]["flagged"]["intent"])
+print(table)
+table.clear()
+data.pop("AndroidManifest.xml")
+file_names = data.keys()
+for file_name in file_names:
+    table.field_names = ["File_name", "requestWindowFeature","PackageManager","Calendar", "System", "sms", "click","accessibility", "Android"]
+    requestWindowFeature = data[file_name]["flagged"]["API"]["requestWindowFeature"]
+    PackageManager = data[file_name]["flagged"]["API"]["PackageManager"]
+    Calendar = data[file_name]["flagged"]["API"]["Calendar"]
+    System = data[file_name]["flagged"]["API"]["System"]
+    sms = data[file_name]["flagged"]["API"]["sms"]
+    click = data[file_name]["flagged"]["API"]["click"]
+    accessibility = data[file_name]["flagged"]["API"]["accessibility"]
+    Android = data[file_name]["flagged"]["API"]["Android"]
+    for (requestWindowFeature_line, PackageManager_line, Calendar_line, System_line, sms_line, click_line, accessibility_line, Android_line) in itertools.zip_longest(requestWindowFeature, PackageManager, Calendar, System, sms, click, accessibility, Android):
+        table.add_row([file_name, requestWindowFeature_line, PackageManager_line, Calendar_line, System_line, sms_line, click_line, accessibility_line, Android_line])
+print(table)
+#late
 #add generation of report

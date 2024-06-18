@@ -1,5 +1,4 @@
 import json
-import javalang
 import os
 #dont care about false positives
 #narrow intent - (low prio)
@@ -77,7 +76,7 @@ class File_read:
                 perms_found = [element for element in sus_perms if element.lower() in line.lower()]
                 if ("permission" in line):
                     #json
-                    if (len(perms_found)==0):
+                    if (len(perms_found)>0):
                         self.flagged["permissions"].append(line)
                         self.is_flagged = True
                 elif ("<intent" in line):
@@ -115,6 +114,7 @@ class File_read:
                     close_brackets +=1
                     function_name +=line.strip()
                     if (close_brackets == open_brackets):
+                        
                         is_function = False
                         not_email_intent_bool = True
                     if (close_brackets == open_brackets and function_flagged):
