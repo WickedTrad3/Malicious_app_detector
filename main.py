@@ -29,7 +29,7 @@ def check_folders(directory, cwd, permissions_check = False, url_check = False, 
     for path, folders, files in os.walk(directory):
         
     # Open file
-    # Open folder
+    # Open folder   
         for filename in files:
             try:
                 extension = filename.split(".")[1]
@@ -151,19 +151,22 @@ if __name__ == "__main__":
     table.set_style(MARKDOWN)
     with open("flagged_files.json", "r") as outfile:
         data = json.load(outfile)
-    data["AndroidManifest.xml"]
+    #data["AndroidManifest.xml"]
     table.add_column("Permissions",data["AndroidManifest.xml"]["flagged"]["permissions"])
 
     perms_table = table.get_string()
     table.clear()
-
+    Email = data["AndroidManifest.xml"]["flagged"]["intent"]["email"]
+    Others = data["AndroidManifest.xml"]["flagged"]["intent"]["others"]
     #adding intents to android manfiest
-    table.add_column("Email",data["AndroidManifest.xml"]["flagged"]["intent"]["email"])
-    table.add_column("Others",data["AndroidManifest.xml"]["flagged"]["intent"]["others"])
-
+    table.field_names = ["Email", "Others"]
+    for (email_line, other_line) in itertools.zip_longest(Email, Others):
+        table.add_row([email_line,other_line])
+    
     table_data = perms_table + "\n\n" + table.get_string()
     with open('Android_manifest_examined.txt', 'w') as f:
         f.write(table_data)
+
     table.clear()
 
     #API used
