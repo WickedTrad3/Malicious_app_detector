@@ -1,219 +1,185 @@
-import json
+#!/usr/bin/env python3
+
+import re
 import os
-#dont care about false positives
-#narrow intent - (low prio)
-class File_read:
-    #havent decided wether to make this one class for all files or one for each file
-    #leaning to one class per folder
-    #need check for libraries
-    def __init__(self, file_name, file_path):
-        self.file_name = file_name
-        self.file_path = file_path
-        #unknown if need md5
-        self.md5 = ""
-        self.is_flagged = False
-        #perms
-        #api -> asking of perms to external apps/display features?
-        #api -> more than just package names and system calls?
-        self.flagged = {
-            "permissions": [],
-            "API": {
-                #api
-                "requestWindowFeature":[],
-                #package
-                "PackageManager": [],
-                #calender is api
-                "Calendar":[],
-                "System":[],
-                "sms":[],
-                "click":[],
-                "accessibility":[],
-                "Android":[]
-            },
-            "logging": [],
-            "intent": {
-                "email":[],
-                "others":[]
-            },
-            #rename to internet use
-            #add use of 
-            "url": [],
-            "extra": [],
-            "functions":[]
-        }
+from collections import defaultdict
 
-    def check_strings(self, permissions_check, url_check, apis_check, intent_check, logging_check, extra_check):
-        file_name,file_extension = self.file_name.split(".")
-        if (file_name == "AndroidManifest" and permissions_check):
-            self.check_permissions()
-            #yet to seperate into different types of rule sets
-            #intents
-        if (file_extension == "java"):
-            self.check_java(url_check, apis_check, intent_check, logging_check, extra_check)
-    #change to flag a few permissions
-    def check_permissions(self):
+# Existing suspicious patterns
+suspicious_permissions = [
+    "android.permission.READ_PHONE_STATE",
+    "android.permission.SEND_SMS",
+    "android.permission.READ_SMS",
+    "android.permission.WRITE_SMS",
+    "android.permission.RECORD_AUDIO",
+    "android.permission.ACCESS_NETWORK_STATE",
+    "android.permission.INTERNET",
+    "android.permission.RECEIVE_BOOT_COMPLETED",
+    "android.permission.ACCESS_FINE_LOCATION",
+    "android.permission.READ_CONTACTS",
+    "android.permission.WRITE_EXTERNAL_STORAGE",
+    "android.permission.CAMERA",
+    "android.permission.READ_CALENDAR",
+    "android.permission.CALL_PHONE"
+]
+
+suspicious_urls = [
+    r"https?://[^\s]+", 
+    r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
+]
+
+suspicious_code_and_apis = [
+    "COMMAND_SEND_SMS",
+    "getIMEI",
+    "httpclient1",
+    "HttpPost",
+    "UrlEncodedFormEntity",
+    r"invoke-direct \{v6, v13\}, Lorg/apache/http/client/methods/HttpPost;-><init>\(Ljava/lang/String;\)V",
+    "Landroid/telephony/SmsManager;->sendTextMessage",
+    "Ljavax/crypto/Cipher;->getInstance",
+    "Landroid/content/ContentResolver;->query",
+    "Landroid/hardware/Camera;->open",
+    r"invoke-virtual \{.*\}, Ljava/lang/reflect/Method;->invoke",
+    "requestWindowFeature", 
+    "PackageManager", 
+    "Calendar", 
+    "System", 
+    "sms", 
+    "click", 
+    "accessibility", 
+    "Android"
+]
+
+suspicious_policies = [
+    "<force-lock />",
+    "<wipe-data />",
+    "<encrypted-storage />",
+    "<limit-password />"
+]
+
+suspicious_intents = [
+    "Intent",
+    "mail",
+    "sendto"
+]
+
+suspicious_logging = [
+    "Log.v", "Log.d", "Log.i", "Log.w", "Log.e"
+]
+
+suspicious_extras = [
+    "valueOf", "concat",
+    "<force-lock />",
+    "<wipe-data />",
+    "<encrypted-storage />",
+    "<limit-password />"
+]
+
+def flag_suspicious_permissions(content):
+    permissions = re.findall(r"android\.permission\.\w+", content)
+    return list([perm for perm in permissions if perm in suspicious_permissions])
+
+def flag_suspicious_urls(content):
+    flagged_urls = []
+    for url_pattern in suspicious_urls:
+        matches = re.findall(url_pattern, content)
+        flagged_urls.extend(matches)
+    return list(flagged_urls)
+
+def flag_suspicious_code_and_apis(content):
+    flagged_code_and_apis = []
+    for snippet in suspicious_code_and_apis:
+        matches = re.findall(".*?" + snippet+".*?\n", content)
+        flagged_code_and_apis.extend(matches)
+    flagged_code_and_apis = [intent.strip() for intent in flagged_code_and_apis]
+    
+    return list(flagged_code_and_apis)
+
+def flag_suspicious_policies(content):
+    return list([policy for policy in suspicious_policies if policy in content])
+
+def flag_suspicious_logging(content):
+    flagged_logging = []
+    for log in suspicious_logging:
+        matches = re.findall(".*?" + log +".*?\n", content)
+        flagged_logging.extend(matches)
+    return list(flagged_logging)
+
+def flag_suspicious_intents(content):
+    flagged_intents = []
+    for intent in suspicious_intents:
+        matches = re.findall(".*?" + intent+".*?\n", content, re.IGNORECASE)
+        flagged_intents.extend(matches)
+    flagged_intents = [intent.strip() for intent in flagged_intents]
+    return list(flagged_intents)
+
+def flag_suspicious_extras(content):
+    flagged_extras = []
+    for extra in suspicious_extras:
+        matches = re.findall(".*?" + extra+".*?\n", content)
+        flagged_extras.extend(matches)
+    return list(flagged_extras)
+
+def scan_file(file_path, scan_permissions, scan_urls, scan_code_and_apis, scan_logging, scan_intents, scan_extras):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+        flagged_permissions = flag_suspicious_permissions(content) if scan_permissions else list()
+        flagged_urls = flag_suspicious_urls(content) if scan_urls else list()
+        flagged_code_and_apis = flag_suspicious_code_and_apis(content) if scan_code_and_apis else list()
+        flagged_logging = flag_suspicious_logging(content) if scan_logging else list()
+        flagged_intents = flag_suspicious_intents(content) if scan_intents else list()
+        flagged_extras = flag_suspicious_extras(content) if scan_extras else list()
         
-        with open(os.path.join(self.file_path, self.file_name), encoding="utf8") as fp:
-            intent_found = False
-            intent = ""
-            #copy from amadeus
-            sus_perms = ["READ_PHONE_STATE", 
-                         "SEND_SMS", 
-                         "READ_SMS", 
-                         "WRITE_SMS", 
-                         "RECORD_AUDIO", 
-                         "ACCESS_NETWORK_STATE",
-                         "INTERNET",
-                         "RECEIVE_BOOT_COMPLETED", 
-                         "ACCESS_FINE_LOCATION",
-                         "READ_CONTACTS",
-                         "WRITE_EXTERNAL_STORAGE",
-                         "CAMERA",
-                         "READ_CALENDAR",
-                         "CALL_PHONE"
-                         ]
-            for line in fp:
-                perms_found = [element for element in sus_perms if element.lower() in line.lower()]
-                if ("permission" in line):
-                    #json
-                    if (len(perms_found)>0):
-                        self.flagged["permissions"].append(line)
-                        self.is_flagged = True
-                elif ("<intent" in line):
-                    intent_found = True
-                    intent+=line.strip()
-                elif ("</intent" in line):
-                    intent_found = False
-                    intent+=line.strip()
-                    self.flagged["intent"]["others"].append(intent)
-                    intent = ""
-                elif (intent_found):
-                    intent+=line.strip()
-                    self.is_flagged = True
-    #how check if obfuscated
-    #redo to map to cli
-    #integrate intents into other section e.g url, api
-    def check_java(self, url_check, apis_check, intent_check, logging_check, extra_check):
-        intent_list = []
-        function_name = ""
-        function_flagged = False
-        not_email_intent_bool = True
-        open_brackets = 0
-        close_brackets = 0
-        is_function = False
-        top_domain_name = [".xyz",'.live',".com",".store",".info",".top",".net"]
-        with open(os.path.join(self.file_path, self.file_name), encoding="utf8") as fp:
-            for line in fp:
-                domainfound = [element for element in top_domain_name if element.lower() in line.lower()]
-                #look for all intents
-                #does not account for intents existing outside method
-                if ("{" in line and "class" not in line):
-                    open_brackets +=1
-                    is_function = True
-                if ("}" in line):
-                    close_brackets +=1
-                    function_name +=line.strip()
-                    if (close_brackets == open_brackets):
-                        
-                        is_function = False
-                        not_email_intent_bool = True
-                    if (close_brackets == open_brackets and function_flagged):
-                        self.flagged["functions"].append(function_name)
-                        function_name = ""
-                        self.is_flagged = True
-                        function_flagged = False
-                        is_function = False
-                        
-                        if (not_email_intent_bool == False):
-                            self.flagged["intent"]["mail"].extend(intent_list)
-                            not_email_intent_bool = True
-                #flag for all?
-                if ("Intent".lower() in line.lower() and intent_check):
-                    
+        return [flagged_permissions, flagged_urls, flagged_code_and_apis,
+                flagged_logging, flagged_intents, flagged_extras]
+    except:
+        return [list(), list(), list(), list(), list(), list(), list()]
+'''
+def scan_folder(folder_path, scan_permissions, scan_urls, scan_code_and_apis, scan_policies, scan_logging, scan_intents, scan_extras):
+    results = defaultdict(lambda: defaultdict(list))
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            (flagged_permissions, flagged_urls, flagged_code_and_apis, 
+             flagged_logging, flagged_intents, flagged_extras) = scan_file(
+                file_path, scan_permissions, scan_urls, scan_code_and_apis, scan_policies,
+                scan_logging, scan_intents, scan_extras)
 
-                    if ("mail".lower() in line.lower() or "sendto".lower() in line.lower()):
-                        #self.flagged["intent"]["mail"].append(line.strip())
-                        intent_list.append(line.strip())
-                        not_email_intent_bool =False
-                    elif (not_email_intent_bool):
-                        self.flagged["intent"]["others"].append(line.strip())
-                        
-                    #intent_name = line.split("=")[0].split()[1]
-                    if (is_function):
-                        function_flagged = True
-                #find where intent is being used in
-                #elif (intent_name in line and intent_name !=""):
-                    #self.flagged["intent"].append(line)
-                    #function_flagged = True
-                #url may be in intent
-                #only obtains if directly http
-                #other methods include json strings and piecing together
-                #DGA can be done to generate its own domain name to access
-                #.xyz,.live,.com,.store,.info,.top,.net
-                #wget,
-                #try get hierachy of permissions used for url usage
-                # under internet -> HttpURLConnection, java.net.URL, OkHttp, RetroFit
-                # fix url, cannot detect github
-                #domain found may not be working
-                if ("http:".lower() in line.lower() and len(domainfound) and url_check):
-                    self.flagged["url"].append(line.lstrip())
-                    
-                    function_flagged = True
-                #sms, system, click need account for caps
-                if (apis_check):
-                #requestWindowFeature
-                #used to load other apps, and can be used to read info from other apps
-                    if ("requestWindowFeature".lower() in line.lower()):
-                        self.flagged["API"]["requestWindowFeature"].append(line.strip())
-                        #API["requestWindowFeature"].append(line.strip())
-                        function_flagged = True
-                    #flag calender
-                    elif ("Calendar" in line):
-                        self.flagged["API"]["Calendar"].append(line.strip())
-                        #API["Calendar"].append(line.strip())
-                        function_flagged = True
-                    #flag system
-                    elif ("System".lower() in line.lower()):
-                        self.flagged["API"]["System"].append(line.strip())
-                        #API["System"].append(line.strip())
-                        function_flagged = True
-                    elif ("sms".lower() in line.lower()):
-                        self.flagged["API"]["sms"].append(line.strip())
-                        #API["sms"].append(line.strip())
-                        function_flagged = True
-                    
-                    elif ("click" in line):
-                        self.flagged["API"]["click"].append(line.strip())
-                        #API["click"].append(line.strip())
-                        function_flagged = True
-                    #keylogging, dk if accessibility is correct
-                    elif ("accessbility".lower() in line.lower()):
-                        self.flagged["API"]["accessbility"].append(line.strip())
-                        #API["accessibility"].append(line.strip())
-                        function_flagged = True
-                    elif ("PackageManager".lower() in line.lower()):
-                        self.flagged["API"]["PackageManager"].append(line.strip())
-                        #API["PackageManager"].append(line.strip())
-                        function_flagged = True
-                    #flag all android activities
-                    elif ("Android".lower() in line):
-                        self.flagged["API"]["Android"].append(line.strip())
-                        function_flagged = True
-                if ("log".lower() in line and logging_check):
-                        self.flagged["logging"].append(line.strip())
-                        function_flagged = True
-                if (extra_check):
-                    #check for splicing just in case values are semi obfuscated
-                    if ("valueOf".lower() in line or "concat".lower() in line.lower()):
-                        self.flagged["extra"].append(line.strip())
-                        #API["splicing"].append(line.strip())
-                        function_flagged = True
-                    
-                
-                if (is_function):
-                    function_name +=line.lstrip()
-                #add sideloading
+            if flagged_permissions:
+                results['permissions'][file_path].update(flagged_permissions)
+            if flagged_urls:
+                results['urls'][file_path].update(flagged_urls)
+            if flagged_code_and_apis:
+                results['code_and_apis'][file_path].update(flagged_code_and_apis)
+            if flagged_logging:
+                results['logging'][file_path].update(flagged_logging)
+            if flagged_intents:
+                results['intents'][file_path].update(flagged_intents)
+            if flagged_extras:
+                results['extras'][file_path].update(flagged_extras)
 
-                #add writing of files/file access
+    return results
 
-                #not possible to detect sideloading without comparing apk to google play store
+def print_results(results):
+    for category, files in results.items():
+        if category == 'permissions':
+            print("\nFlagged Permissions:")
+        elif category == 'urls':
+            print("\nFlagged URLs:")
+        elif category == 'code_and_apis':
+            print("\nFlagged Code Snippets and APIs:")
+        elif category == 'policies':
+            print("\nFlagged Policies:")
+        elif category == 'logging':
+            print("\nFlagged Logging:")
+        elif category == 'intents':
+            print("\nFlagged Intents:")
+        elif category == 'extras':
+            print("\nFlagged Extras:")
+            
+
+        for file_path, items in files.items():
+            print(f"  File: {file_path}")
+            for item in items:
+                print(f"    - {item}")
+'''
