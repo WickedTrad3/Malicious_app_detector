@@ -21,7 +21,6 @@ import itertools
 
 # how to tell if obfuscated string or notimport itertools 
 
-# all assuming in java
 def check_folders(directory, cwd, permissions_check = False, url_check = False, apis_check = False, intent_check = False, logging_check = False, extra_check = False):
     first_iteration = True
     android_manifest_found = False
@@ -29,36 +28,6 @@ def check_folders(directory, cwd, permissions_check = False, url_check = False, 
         for filename in files:
             try:
                 extension = filename.split(".")[1]
-            except:
-                extension = None
-            if filename == "AndroidManifest.xml" or extension == "java":
-                if filename == "AndroidManifest.xml":
-                    android_manifest_found = True
-
-                file_path = os.path.join(path, filename)
-                results = rules.scan_file(file_path, permissions_check, url_check, apis_check, intent_check, logging_check, extra_check)
-
-                if any(results):
-                    my_file = Path(cwd + "/flagged_files.json")
-                    if not my_file.is_file() or first_iteration:
-                        json_create()
-                        first_iteration = False
-
-                    json_update({filename: results})
-
-                else:
-                    pass
-
-    if not android_manifest_found:
-        print("Android Manifest.xml not found")
-
-def check_folders(directory, cwd, permissions_check = False, url_check = False, apis_check = False, intent_check = False, logging_check = False, extra_check = False):
-    first_iteration = True
-    android_manifest_found = False
-    for path, folders, files in os.walk(directory):
-        for filename in files:
-            try:
-                extension = filename.split(".")[-1]
             except:
                 extension = None
             if filename == "AndroidManifest.xml" or extension == "java" or extension == "smali":
@@ -125,6 +94,7 @@ if __name__ == "__main__":
     parser_analysis.add_argument("-e", "--extras", help="List all extras used in the APK.", default=False, required=False, action="store_true")
 
     args = parser.parse_args()
+    print(args)
     cwd = os.path.dirname(__file__)
     non_verbose_mode = True
     if not os.path.exists(args.path):
@@ -153,45 +123,91 @@ if __name__ == "__main__":
         data = json.load(outfile)
 
     # adding permissions to android manifest
-    for key in data.keys():
-        if ("AndroidManifest.xml" in key):
-            
-            print("android")
-            table.add_column("Permissions", data[key][0])
-            perms_table = table.get_string()
-            table.clear()
 
-            # adding intents to android manifest
-            table.add_column("Email", data[key][4])
+    if (args.permissions or args.very_verbose):
+        table = PrettyTable(["File_name", "Permissions"])
+        for key in data:
+            if data[key][0]:  # Check if there are permissions flagged
+                table.add_row([key, data[key][0]])
+        with open('permissions_examined.txt', 'w') as f:
+            f.write(table.get_string())
+        print("Saved output as permissions_examined.txt")
+        table.clear()
 
-            table_data = perms_table + "\n\n" + table.get_string()
-            with open('Android_manifest_examined.txt', 'w') as f:
-                f.write(table_data)
-            table.clear()
-            data.pop(key)
-            break
+        for key in data.keys():
+            if ("AndroidManifest.xml" in key):
+                
+                print("android")
+                table.add_column("Permissions", data[key][0])
+                perms_table = table.get_string()
+                table.clear()
 
-    # API used
-    file_names = data.keys()
-    for file_name in file_names:
-        table.field_names = ["File_name", "API"]
-        API_info = data[file_name][2]
-        table.add_row([file_name, API_info])
+                # adding intents to android manifest
+                table.add_column("Intents", data[key][4])
+
+                table_data = perms_table + "\n\n" + table.get_string()
+                with open('Android_manifest_examined.txt', 'w') as f:
+                    f.write(table_data)
+                table.clear()
+                data.pop(key)
+                break
+
+    if (args.urls or args.very_verbose):
+        table = PrettyTable(["File_name", "URLs"])
+        for key in data:
+            if data[key][1]:  # Check if there are URLs flagged
+                table.add_row([key, data[key][1]])
+        with open('urls_examined.txt', 'w') as f:
+            f.write(table.get_string())
+        print("Saved output as urls_examined.txt")
+        table.clear()
+
+    if (args.apis or args.very_verbose):
+        table = PrettyTable(["File_name", "APIs"])
+        for key in data:
+            if data[key][2]:  # Check if there are APIs flagged
+                table.add_row([key, data[key][2]])
+        with open('apis_examined.txt', 'w') as f:
+            f.write(table.get_string())
+        print("Saved output as apis_examined.txt")
+        table.clear()
+
+    if (args.apis or args.very_verbose):
+        table = PrettyTable(["File_name", "APIs"])
+        for key in data:
+            if data[key][2]:  # Check if there are APIs flagged
+                table.add_row([key, data[key][2]])
+        with open('apis_examined.txt', 'w') as f:
+            f.write(table.get_string())
+        print("Saved output as apis_examined.txt")
+        table.clear()
     
-    table_data = table.get_string()
-    with open('API_examined.txt', 'w') as f:
-        f.write(table_data)
-    table.clear()
+    if (args.intents or args.very_verbose):
+        table = PrettyTable(["File_name", "Intents"])
+        for key in data:
+            if data[key][4]:  # Check if there are intents flagged
+                table.add_row([key, data[key][4]])
+        with open('intents_examined.txt', 'w') as f:
+            f.write(table.get_string())
+        print("Saved output as intents_examined.txt")
+        table.clear()
 
-    # other flagged items
-    for file_name in file_names:
-        table.field_names = ["File_name", "url","logging", "extra"]
-        url = data[file_name][1]
-        logging = data[file_name][3]
-        extra = data[file_name][5]
-        for (url_line, logging_line, extra_line) in itertools.zip_longest(url, logging, extra):
-            table.add_row([file_name, url_line, logging_line, extra_line])
-    table_data = table.get_string()
-    with open('others.txt', 'w') as f:
-        f.write(table_data)
-    table.clear()
+    if (args.logging or args.very_verbose):
+        table = PrettyTable(["File_name", "Logging"])
+        for key in data:
+            if data[key][3]:  # Check if there are logging flagged
+                table.add_row([key, data[key][3]])
+        with open('logging_examined.txt', 'w') as f:
+            f.write(table.get_string())
+        print("Saved output as logging_examined.txt")
+        table.clear()
+
+    if (args.extras or args.very_verbose):
+        table = PrettyTable(["File_name", "Extras"])
+        for key in data:
+            if data[key][5]:  # Check if there are extras flagged
+                table.add_row([key, data[key][5]])
+        with open('extras_examined.txt', 'w') as f:
+            f.write(table.get_string())
+        print("Saved output as extras_examined.txt")
+        table.clear()
