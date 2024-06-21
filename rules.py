@@ -104,10 +104,14 @@ def flag_suspicious_logging(content):
         flagged_logging.extend(matches)
     return list(flagged_logging)
 
-def flag_suspicious_intents(content):
+def flag_suspicious_intents(file_path, content):
     flagged_intents = []
     for intent in suspicious_intents:
-        matches = re.findall(".*?" + intent+".*?\n", content, re.IGNORECASE)
+        
+        if (file_path.split("/")[-1]== "AndroidManifest.xml"):
+            matches = re.findall("<intent-filter>(.*?)</intent-filter>", content,  re.IGNORECASE | re.DOTALL)
+        else:
+            matches = re.findall(".*?" + intent+".*?\n", content, re.IGNORECASE)
         flagged_intents.extend(matches)
     flagged_intents = [intent.strip() for intent in flagged_intents]
     return list(flagged_intents)
@@ -119,7 +123,7 @@ def flag_suspicious_extras(content):
         flagged_extras.extend(matches)
     return list(flagged_extras)
 
-def scan_file(file_path, scan_permissions, scan_urls, scan_code_and_apis, scan_logging, scan_intents, scan_extras):
+def scan_file(file_path, scan_permissions, scan_urls, scan_code_and_apis, scan_intents, scan_logging, scan_extras):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             content = file.read()
@@ -127,7 +131,7 @@ def scan_file(file_path, scan_permissions, scan_urls, scan_code_and_apis, scan_l
         flagged_urls = flag_suspicious_urls(content) if scan_urls else list()
         flagged_code_and_apis = flag_suspicious_code_and_apis(content) if scan_code_and_apis else list()
         flagged_logging = flag_suspicious_logging(content) if scan_logging else list()
-        flagged_intents = flag_suspicious_intents(content) if scan_intents else list()
+        flagged_intents = flag_suspicious_intents(file_path, content) if scan_intents else list()
         flagged_extras = flag_suspicious_extras(content) if scan_extras else list()
         
         return [flagged_permissions, flagged_urls, flagged_code_and_apis,

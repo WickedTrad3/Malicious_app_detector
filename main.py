@@ -10,17 +10,6 @@ import rules
 from prettytable import PrettyTable, MARKDOWN
 import itertools
 
-# malwh --help
-# malwh -vv (everything)
-# malwh -p (perm)
-# malwh -u (url)
-# malwh -A (api)
-# malwh -i (intent)
-# must decompile before any scanning
-# malwh -d <filename> -o <output file> (decompile into file directory, otherwise write into temp)
-
-# how to tell if obfuscated string or notimport itertools 
-
 def check_folders(directory, cwd, permissions_check = False, url_check = False, apis_check = False, intent_check = False, logging_check = False, extra_check = False):
     first_iteration = True
     android_manifest_found = False
@@ -124,7 +113,7 @@ if __name__ == "__main__":
 
     # adding permissions to android manifest
 
-    if (args.permissions or args.very_verbose):
+    if (args.permissions or args.very_verbose or args.intents):
         table = PrettyTable(["File_name", "Permissions"])
         for key in data:
             if data[key][0]:  # Check if there are permissions flagged
