@@ -4,182 +4,295 @@ import re
 import os
 from collections import defaultdict
 
-# Existing suspicious patterns
+# Existing suspicious patterns with context
 suspicious_permissions = [
-    "android.permission.READ_PHONE_STATE",
-    "android.permission.SEND_SMS",
-    "android.permission.READ_SMS",
-    "android.permission.WRITE_SMS",
-    "android.permission.RECORD_AUDIO",
-    "android.permission.ACCESS_NETWORK_STATE",
-    "android.permission.INTERNET",
-    "android.permission.RECEIVE_BOOT_COMPLETED",
-    "android.permission.ACCESS_FINE_LOCATION",
-    "android.permission.READ_CONTACTS",
-    "android.permission.WRITE_EXTERNAL_STORAGE",
-    "android.permission.CAMERA",
-    "android.permission.READ_CALENDAR",
-    "android.permission.CALL_PHONE"
+    {
+        "suspicious": "android.permission.READ_PHONE_STATE",
+        "legitimate": "Allows read-only access to phone state, including the current cellular network information, the status of any ongoing calls, and a list of any PhoneAccounts registered on the device.",
+        "abuse": "App may be using it to track device location, monitor calls, and gather other sensitive information"
+    },
+    {
+        "suspicious": "android.permission.SEND_SMS",
+        "legitimate": "Allows an application to send SMS messages.",
+        "abuse": "App may be sending messages unknowingly for phishing or spam"
+    },
+    {
+        "suspicious": "android.permission.READ_SMS",
+        "legitimate": "Allows an application to read SMS messages.",
+        "abuse": "App may be reading sensitive messages such as verification codes"
+    },
+    {
+        "suspicious": "android.permission.WRITE_SMS",
+        "legitimate": "(Obsolete, removed in API level 23) Allows an application to write SMS messages."
+    },
+    {
+        "suspicious": "android.permission.RECORD_AUDIO",
+        "legitimate": "Allows an application to record audio.",
+        "abuse": "App may be recording audio without user consent"
+    },
+    {
+        "suspicious": "android.permission.ACCESS_NETWORK_STATE",
+        "legitimate": "Allows applications to access information about networks.",
+        "abuse": "App may be checking if the device is connected to a network, which can be used to monitor network activity or data exfiltration"
+    },
+    {
+        "suspicious": "android.permission.INTERNET",
+        "legitimate": "Allows applications to open network sockets.",
+        "abuse": "App may be communicating with a remote server"
+    },
+    {
+        "suspicious": "android.permission.RECEIVE_BOOT_COMPLETED",
+        "legitimate": "Allows an application to receive the Intent.ACTION_BOOT_COMPLETED that is broadcast after the system finishes booting.",
+        "abuse": "App may launch itself after the device boots to ensure persistence"
+    },
+    {
+        "suspicious": "android.permission.ACCESS_FINE_LOCATION",
+        "legitimate": "Allows an app to access precise location.",
+        "abuse": "App may be tracking the user's location"
+    },
+    {
+        "suspicious": "android.permission.READ_CONTACTS",
+        "legitimate": "Allows an application to read the user's contacts data.",
+        "abuse": "App may be reading contacts for phishing or spamming"
+    },
+    {
+        "suspicious": "android.permission.WRITE_EXTERNAL_STORAGE",
+        "legitimate": "Allows an application to write to external storage.",
+        "abuse": "App may be writing data to external storage for data theft or manipulation"
+    },
+    {
+        "suspicious": "android.permission.CAMERA",
+        "legitimate": "Required to be able to access the camera device.",
+        "abuse": "App may be taking pictures or recording videos without user consent"
+    },
+    {
+        "suspicious": "android.permission.READ_CALENDAR",
+        "legitimate": "Allows an application to read the user's calendar data.",
+        "abuse": "App may be reading calendar events which may contain sensitive information"
+    },
+    {
+        "suspicious": "android.permission.CALL_PHONE",
+        "legitimate": "Allows an application to initiate a phone call without going through the Dialer user interface for the user to confirm the call.",
+        "abuse": "App may be initiating phone calls without user consent"
+    }
 ]
 
 suspicious_urls = [
-    r"https?://[^\s]+",
-    r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
+    {
+        "suspicious": r"https?://[^\s]+",
+        "legitimate": "Indicates the presence of URLs.",
+        "abuse": "App may be directing user to phishing sites, sideloading malware, or communicating with a C2 server."
+    },
+    {
+        "suspicious": r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b",
+        "legitimate": "Indicates the presence of IP addresses.",
+        "abuse": "App may be directing user to phishing sites, sideloading malware, or communicating with a C2 server."
+    }
 ]
 
 suspicious_code_and_apis = [
-    "COMMAND_SEND_SMS",
-    "getIMEI",
-    "httpclient1",
-    "HttpPost",
-    "UrlEncodedFormEntity",
-    r"invoke-direct \{v6, v13\}, Lorg/apache/http/client/methods/HttpPost;-><init>\(Ljava/lang/String;\)V",
-    "Landroid/telephony/SmsManager;->sendTextMessage",
-    "Ljavax/crypto/Cipher;->getInstance",
-    "Landroid/content/ContentResolver;->query",
-    "Landroid/hardware/Camera;->open",
-    r"invoke-virtual \{.*\}, Ljava/lang/reflect/Method;->invoke",
-    "requestWindowFeature",
-    "PackageManager",
-    "Calendar",
-    "System",
-    "sms",
-    "click",
-    "accessibility",
-    "Android"
-]
-
-suspicious_policies = [
-    "<force-lock />",
-    "<wipe-data />",
-    "<encrypted-storage />",
-    "<limit-password />"
+    {
+        "suspicious": "COMMAND_SEND_SMS",
+        "legitimate": "Used to send SMS messages.",
+        "abuse": "App may be sending SMS messages"
+    },
+    {
+        "suspicious": "getIMEI",
+        "legitimate": "Retrieves the device's IMEI.",
+        "abuse": "App may be using it for tracking or identifying the device"
+    },
+    {
+        "suspicious": "httpclient1",
+        "legitimate": "HTTP client usage.",
+        "abuse": "App may be using it for communicating with remote servers"
+    },
+    {
+        "suspicious": "HttpPost",
+        "legitimate": "Used for sending data via HTTP POST method.",
+        "abuse": "App may be sending data to a server, potentially for exfiltration of sensitive information"
+    },
+    {
+        "suspicious": "UrlEncodedFormEntity",
+        "legitimate": "Used in HTTP requests for sending data.",
+        "abuse": "App may be sending data to a server"
+    },
+    {
+        "suspicious": r"invoke-direct \{v6, v13\}, Lorg/apache/http/client/methods/HttpPost;-><init>\(Ljava/lang/String;\)V",
+        "legitimate": "Indicates usage of HttpPost.",
+        "abuse": "App may be using it for sending data to a server"
+    },
+    {
+        "suspicious": "Landroid/telephony/SmsManager;->sendTextMessage",
+        "legitimate": "Sends SMS messages.",
+        "abuse": "App may be sending SMS messages"
+    },
+    {
+        "suspicious": "Ljavax/crypto/Cipher;->getInstance",
+        "legitimate": "Used for cryptographic operations.",
+        "abuse": "App may be encrypting data, possibly for exfiltration or locking user device"
+    },
+    {
+        "suspicious": "Landroid/content/ContentResolver;->query",
+        "legitimate": "Queries data from content providers.",
+        "abuse": "App may be querying data for theft"
+    },
+    {
+        "suspicious": "Landroid/hardware/Camera;->open",
+        "legitimate": "Opens the camera device.",
+        "abuse": "App may be taking pictures or recording videos without user consent"
+    },
+    {
+        "suspicious": r"invoke-virtual \{.*\}, Ljava/lang/reflect/Method;->invoke",
+        "legitimate": "Indicates use of reflection.",
+        "abuse": "App may be using reflection to dynamically invoke code, possibly for obfuscation"
+    },
+    {
+        "suspicious": "requestWindowFeature",
+        "legitimate": "Requests a window feature.",
+        "abuse": "App may be mimicking system UI for phishing or capturing user input"
+    },
+    {
+        "suspicious": "PackageManager",
+        "legitimate": "Provides access to package information.",
+        "abuse": "App may be stealing information about installed apps"
+    },
+    {
+        "suspicious": "Calendar",
+        "legitimate": "Accesses calendar data.",
+        "abuse": "App may be accessing calendar events for sensitive information"
+    },
+    {
+        "suspicious": "System",
+        "legitimate": "General system usage.",
+        "abuse": "Needs clarification"
+    },
+    {
+        "suspicious": "sms",
+        "legitimate": "Indicates SMS functionality.",
+        "abuse": "General indication of SMS functions"
+    },
+    {
+        "suspicious": "click",
+        "legitimate": "Indicates click functionality.",
+        "abuse": "General indication of clickjacking or simulating user clicks"
+    },
+    {
+        "suspicious": "accessibility",
+        "legitimate": "Indicates accessibility functionality.",
+        "abuse": "Needs clarification"
+    },
+    {
+        "suspicious": "Android",
+        "legitimate": "General Android usage.",
+        "abuse": "General Android flag"
+    }
 ]
 
 suspicious_intents = [
-    "Intent",
-    "mail",
-    "sendto"
+    {
+        "suspicious": "Intent",
+        "legitimate": "General intent usage.",
+        "abuse": "General indication of intent usage"
+    },
+    {
+        "suspicious": "mail",
+        "legitimate": "Indicates mail functionality.",
+        "abuse": "General indication of mail function"
+    },
+    {
+        "suspicious": "sendto",
+        "legitimate": "Indicates sending data.",
+        "abuse": "May be used to send data out, potentially exfiltrating sensitive information."
+    }
 ]
 
 suspicious_logging = [
-    "Log.v", "Log.d", "Log.i", "Log.w", "Log.e"
+    {
+        "suspicious": "Log.v",
+        "legitimate": "Logging functions.",
+        "abuse": "May be used to log sensitive information for exfiltration"
+    },
+    {
+        "suspicious": "Log.d",
+        "legitimate": "Logging functions.",
+        "abuse": "May be used to log sensitive information for exfiltration"
+    },
+    {
+        "suspicious": "Log.i",
+        "legitimate": "Logging functions.",
+        "abuse": "May be used to log sensitive information for exfiltration"
+    },
+    {
+        "suspicious": "Log.w",
+        "legitimate": "Logging functions.",
+        "abuse": "May be used to log sensitive information for exfiltration"
+    },
+    {
+        "suspicious": "Log.e",
+        "legitimate": "Logging functions.",
+        "abuse": "May be used to log sensitive information for exfiltration"
+    }
 ]
 
 suspicious_extras = [
-    "valueOf", "concat",
-    "<force-lock />",
-    "<wipe-data />",
-    "<encrypted-storage />",
-    "<limit-password />"
+    {
+        "suspicious": "valueOf",
+        "legitimate": "General usage.",
+        "abuse": "Needs clarification"
+    },
+    {
+        "suspicious": "concat",
+        "legitimate": "General usage.",
+        "abuse": "Needs clarification"
+    },
+    {
+        "suspicious": "<force-lock />",
+        "legitimate": "Locks the device.",
+        "abuse": "App may lock the device for ransomware"
+    },
+    {
+        "suspicious": "<wipe-data />",
+        "legitimate": "Wipes device data.",
+        "abuse": "App may wipe device data remotely for ransomware"
+    },
+    {
+        "suspicious": "<encrypted-storage />",
+        "legitimate": "Enforces encryption.",
+        "abuse": "App may enforce encryption for ransomware"
+    },
+    {
+        "suspicious": "<limit-password />",
+        "legitimate": "Enforces password policies.",
+        "abuse": "App enforces password policies, possibly to lock out user"
+    }
 ]
 
-def flag_suspicious_permissions(content):
-    permissions = re.findall(r"android\.permission\.\w+", content)
-    return list([perm for perm in permissions if perm in suspicious_permissions])
-
-def flag_suspicious_urls(content):
-    flagged_urls = []
-    for url_pattern in suspicious_urls:
-        matches = re.findall(url_pattern, content)
-        flagged_urls.extend(matches)
-    return list(flagged_urls)
-
-def flag_suspicious_code_and_apis(content):
-    flagged_code_and_apis = []
-    for snippet in suspicious_code_and_apis:
-        matches = re.findall(".*?" + snippet+".*?\n", content)
-        flagged_code_and_apis.extend(matches)
-    flagged_code_and_apis = [intent.strip() for intent in flagged_code_and_apis]
-
-    return list(flagged_code_and_apis)
-
-def flag_suspicious_policies(content):
-    return list([policy for policy in suspicious_policies if policy in content])
-
-def flag_suspicious_logging(content):
-    flagged_logging = []
-    for log in suspicious_logging:
-        matches = re.findall(".*?" + log +".*?\n", content)
-        flagged_logging.extend(matches)
-    return list(flagged_logging)
-
-def flag_suspicious_intents(content):
-    flagged_intents = []
-    for intent in suspicious_intents:
-        matches = re.findall(".*?" + intent+".*?\n", content, re.IGNORECASE)
-        flagged_intents.extend(matches)
-    flagged_intents = [intent.strip() for intent in flagged_intents]
-    return list(flagged_intents)
-
-def flag_suspicious_extras(content):
-    flagged_extras = []
-    for extra in suspicious_extras:
-        matches = re.findall(".*?" + extra+".*?\n", content)
-        flagged_extras.extend(matches)
-    return list(flagged_extras)
+def flag_suspicious_patterns(content, patterns):
+    flagged_patterns = []
+    for pattern in patterns:
+        for match in re.finditer(pattern["suspicious"], content):
+            line = content[match.start():content.find('\n', match.start())]
+            flagged_patterns.append({
+                "suspicious": line,
+                "legitimate": pattern.get("legitimate", ""),
+                "abuse": pattern.get("abuse", "")
+            })
+    return flagged_patterns
 
 def scan_file(file_path, scan_permissions, scan_urls, scan_code_and_apis, scan_logging, scan_intents, scan_extras):
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, 'rb') as file:
             content = file.read()
-        flagged_permissions = flag_suspicious_permissions(content) if scan_permissions else list()
-        flagged_urls = flag_suspicious_urls(content) if scan_urls else list()
-        flagged_code_and_apis = flag_suspicious_code_and_apis(content) if scan_code_and_apis else list()
-        flagged_logging = flag_suspicious_logging(content) if scan_logging else list()
-        flagged_intents = flag_suspicious_intents(content) if scan_intents else list()
-        flagged_extras = flag_suspicious_extras(content) if scan_extras else list()
+        content = content.decode('utf-8', errors='ignore')
 
-        return [flagged_permissions, flagged_urls, flagged_code_and_apis,
-                flagged_logging, flagged_intents, flagged_extras]
-    except:
+        flagged_permissions = flag_suspicious_patterns(content, suspicious_permissions) if scan_permissions else list()
+        flagged_urls = flag_suspicious_patterns(content, suspicious_urls) if scan_urls else list()
+        flagged_code_and_apis = flag_suspicious_patterns(content, suspicious_code_and_apis) if scan_code_and_apis else list()
+        flagged_logging = flag_suspicious_patterns(content, suspicious_logging) if scan_logging else list()
+        flagged_intents = flag_suspicious_patterns(content, suspicious_intents) if scan_intents else list()
+        flagged_extras = flag_suspicious_patterns(content, suspicious_extras) if scan_extras else list()
+
+        return [flagged_permissions, flagged_urls, flagged_code_and_apis, flagged_logging, flagged_intents, flagged_extras]
+    except Exception as e:
+        print(f"Error: {e}")
         return [list(), list(), list(), list(), list(), list(), list()]
-'''
-def scan_folder(folder_path, scan_permissions, scan_urls, scan_code_and_apis, scan_policies, scan_logging, scan_intents, scan_extras):
-    results = defaultdict(lambda: defaultdict(list))
-    for root, dirs, files in os.walk(folder_path):
-        for file in files:
-            file_path = os.path.join(root, file)
-            (flagged_permissions, flagged_urls, flagged_code_and_apis,
-             flagged_logging, flagged_intents, flagged_extras) = scan_file(
-                file_path, scan_permissions, scan_urls, scan_code_and_apis, scan_policies,
-                scan_logging, scan_intents, scan_extras)
-
-            if flagged_permissions:
-                results['permissions'][file_path].update(flagged_permissions)
-            if flagged_urls:
-                results['urls'][file_path].update(flagged_urls)
-            if flagged_code_and_apis:
-                results['code_and_apis'][file_path].update(flagged_code_and_apis)
-            if flagged_logging:
-                results['logging'][file_path].update(flagged_logging)
-            if flagged_intents:
-                results['intents'][file_path].update(flagged_intents)
-            if flagged_extras:
-                results['extras'][file_path].update(flagged_extras)
-
-    return results
-
-def print_results(results):
-    for category, files in results.items():
-        if category == 'permissions':
-            print("\nFlagged Permissions:")
-        elif category == 'urls':
-            print("\nFlagged URLs:")
-        elif category == 'code_and_apis':
-            print("\nFlagged Code Snippets and APIs:")
-        elif category == 'policies':
-            print("\nFlagged Policies:")
-        elif category == 'logging':
-            print("\nFlagged Logging:")
-        elif category == 'intents':
-            print("\nFlagged Intents:")
-        elif category == 'extras':
-            print("\nFlagged Extras:")
-
-
-        for file_path, items in files.items():
-            print(f"  File: {file_path}")
-            for item in items:
-                print(f"    - {item}")
-'''
