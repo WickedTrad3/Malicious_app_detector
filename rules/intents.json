@@ -1,0 +1,17 @@
+[
+    {
+        "suspicious": "Intent",
+        "legitimate": "General intent usage.",
+        "abuse": "General indication of intent usage"
+    },
+    {
+        "suspicious": "mail",
+        "legitimate": "Indicates mail functionality.",
+        "abuse": "General indication of mail function"
+    },
+    {
+        "suspicious": "sendto",
+        "legitimate": "Indicates sending data.",
+        "abuse": "May be used to send data out, potentially exfiltrating sensitive information."
+    }
+]

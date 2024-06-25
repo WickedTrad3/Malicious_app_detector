@@ -2,91 +2,47 @@
 
 import re
 import os
+import json
+from pathlib import Path
 from collections import defaultdict
+import fileinput
 
-# Existing suspicious patterns
-suspicious_permissions = [
-    "android.permission.READ_PHONE_STATE",
-    "android.permission.SEND_SMS",
-    "android.permission.READ_SMS",
-    "android.permission.WRITE_SMS",
-    "android.permission.RECORD_AUDIO",
-    "android.permission.ACCESS_NETWORK_STATE",
-    "android.permission.INTERNET",
-    "android.permission.RECEIVE_BOOT_COMPLETED",
-    "android.permission.ACCESS_FINE_LOCATION",
-    "android.permission.READ_CONTACTS",
-    "android.permission.WRITE_EXTERNAL_STORAGE",
-    "android.permission.CAMERA",
-    "android.permission.READ_CALENDAR",
-    "android.permission.CALL_PHONE"
-]
-
-suspicious_urls = [
-    r"https?://[^\s]+", 
-    r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
-]
-
-suspicious_code_and_apis = [
-    "COMMAND_SEND_SMS",
-    "getIMEI",
-    "httpclient1",
-    "HttpPost",
-    "UrlEncodedFormEntity",
-    r"invoke-direct \{v6, v13\}, Lorg/apache/http/client/methods/HttpPost;-><init>\(Ljava/lang/String;\)V",
-    "Landroid/telephony/SmsManager;->sendTextMessage",
-    "Ljavax/crypto/Cipher;->getInstance",
-    "Landroid/content/ContentResolver;->query",
-    "Landroid/hardware/Camera;->open",
-    r"invoke-virtual \{.*\}, Ljava/lang/reflect/Method;->invoke",
-    "requestWindowFeature", 
-    "PackageManager", 
-    "Calendar", 
-    "System", 
-    "sms", 
-    "click", 
-    "accessibility", 
-    "Android"
-]
-
-suspicious_policies = [
-    "<force-lock />",
-    "<wipe-data />",
-    "<encrypted-storage />",
-    "<limit-password />"
-]
-
-suspicious_intents = [
-    "Intent",
-    "mail",
-    "sendto"
-]
-
-suspicious_logging = [
-    "Log.v", "Log.d", "Log.i", "Log.w", "Log.e"
-]
-
-suspicious_extras = [
-    "valueOf", "concat",
-    "<force-lock />",
-    "<wipe-data />",
-    "<encrypted-storage />",
-    "<limit-password />"
-]
-
-def flag_suspicious_permissions(content):
+def flag_suspicious_permissions(content,cwd):
+    
+    try:
+        with open(Path(cwd+"/rules/permissions.json"), "r") as outfile:
+            suspicious_permissions = json.load(outfile)
+    except:
+        print("cannot open ruleset permissions.json")
+        return ["cannot find ruleset"]
     permissions = re.findall(r"android\.permission\.\w+", content)
     return list([perm for perm in permissions if perm in suspicious_permissions])
 
-def flag_suspicious_urls(content):
+def flag_suspicious_urls(content,cwd):
     flagged_urls = []
+
+    try:
+        with open(Path(cwd+"/rules/url.json"), "r") as outfile:
+            suspicious_urls = json.load(outfile)
+    except:
+        print("cannot open file url.json")
+        return ["cannot find ruleset"]
+
     for url_pattern in suspicious_urls:
         matches = re.findall(url_pattern, content)
         flagged_urls.extend(matches)
     return list(flagged_urls)
 
-def flag_suspicious_code_and_apis(content):
+def flag_suspicious_code_and_apis(content,cwd):
     flagged_code_and_apis = []
+
+    try:
+        with open(Path(cwd+"/rules/code_apis.json"), "r") as outfile:
+            suspicious_code_and_apis = json.load(outfile)
+    except:
+        print("cannot open file code_apis.json")
+        return ["cannot find ruleset"]
+
     for snippet in suspicious_code_and_apis:
         matches = re.findall(".*?" + snippet+".*?\n", content)
         flagged_code_and_apis.extend(matches)
@@ -94,21 +50,39 @@ def flag_suspicious_code_and_apis(content):
     
     return list(flagged_code_and_apis)
 
+'''
 def flag_suspicious_policies(content):
     return list([policy for policy in suspicious_policies if policy in content])
-
-def flag_suspicious_logging(content):
+'''
+def flag_suspicious_logging(content,cwd):
     flagged_logging = []
+
+    try:
+        with open(Path(cwd+"/rules/logging.json"), "r") as outfile:
+            suspicious_logging = json.load(outfile)
+    except:
+        print("cannot open file logging.json")
+        return ["cannot find ruleset"]
+
     for log in suspicious_logging:
         matches = re.findall(".*?" + log +".*?\n", content)
         flagged_logging.extend(matches)
     return list(flagged_logging)
 
-def flag_suspicious_intents(file_path, content):
+def flag_suspicious_intents(file_path, content,cwd):
     flagged_intents = []
+
+    try:
+        with open(Path(cwd+"/rules/intents.json"), "r") as outfile:
+            suspicious_intents = json.load(outfile)
+    except:
+        print("cannot open file intents.json")
+        return ["cannot find ruleset"]
+
     for intent in suspicious_intents:
         
         if (file_path.split("/")[-1]== "AndroidManifest.xml"):
+            #<action android:name=”android.accessibilityservice.AccessibilityService”/>
             matches = re.findall("<intent-filter>(.*?)</intent-filter>", content,  re.IGNORECASE | re.DOTALL)
         else:
             matches = re.findall(".*?" + intent+".*?\n", content, re.IGNORECASE)
@@ -116,29 +90,79 @@ def flag_suspicious_intents(file_path, content):
     flagged_intents = [intent.strip() for intent in flagged_intents]
     return list(flagged_intents)
 
-def flag_suspicious_extras(content):
+def flag_suspicious_extras(content,cwd):
     flagged_extras = []
+
+    try:
+        with open(Path(cwd+"/rules/extras.json"), "r") as outfile:
+            suspicious_extras = json.load(outfile)
+    except:
+        print("cannot open file extras.json")
+        return ["cannot find ruleset"]
+    
     for extra in suspicious_extras:
         matches = re.findall(".*?" + extra+".*?\n", content)
         flagged_extras.extend(matches)
     return list(flagged_extras)
 
+def flag_suspicious_patterns(content, patterns):
+    flagged_patterns = []
+    for pattern in patterns:
+        for match in re.finditer(pattern["suspicious"], content):
+            line = content[match.start():content.find('\n', match.start())]
+            flagged_patterns.append({
+                "suspicious": line,
+                "legitimate": pattern.get("legitimate", ""),
+                "abuse": pattern.get("abuse", "")
+            })
+    return flagged_patterns
+
+def scan_file(file_path, cwd, options):
+    output = []
+    
+    
+    try:
+        with open(file_path, 'rb') as file:
+            content = file.read()
+        content = content.decode('utf-8', errors='ignore')
+        path_to_json = './rules/'
+        json_files = [("./rules/" + pos_json) for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
+        for file_path in json_files:
+            try:
+                with open(file_path, "r") as outfile:
+                    ruleset = json.load(outfile)
+                    output.append(flag_suspicious_patterns(content, ruleset) if options[file_path] else list())
+                return output
+            except (json.decoder.JSONDecodeError):
+                print("Error occured with "+ file_path)
+                output.append([])
+            
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return [list(), list(), list(), list(), list(), list(), list()]
+
+
+'''
 def scan_file(file_path, scan_permissions, scan_urls, scan_code_and_apis, scan_intents, scan_logging, scan_extras):
+    cwd = os.path.dirname(__file__)
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             content = file.read()
-        flagged_permissions = flag_suspicious_permissions(content) if scan_permissions else list()
-        flagged_urls = flag_suspicious_urls(content) if scan_urls else list()
-        flagged_code_and_apis = flag_suspicious_code_and_apis(content) if scan_code_and_apis else list()
-        flagged_logging = flag_suspicious_logging(content) if scan_logging else list()
-        flagged_intents = flag_suspicious_intents(file_path, content) if scan_intents else list()
-        flagged_extras = flag_suspicious_extras(content) if scan_extras else list()
+        
+        flagged_permissions = flag_suspicious_permissions(content,cwd) if scan_permissions else list()
+        flagged_urls = flag_suspicious_urls(content,cwd) if scan_urls else list()
+        flagged_code_and_apis = flag_suspicious_code_and_apis(content,cwd) if scan_code_and_apis else list()
+        flagged_logging = flag_suspicious_logging(content,cwd) if scan_logging else list()
+        flagged_intents = flag_suspicious_intents(file_path, content,cwd) if scan_intents else list()
+        flagged_extras = flag_suspicious_extras(content,cwd) if scan_extras else list()
         
         return [flagged_permissions, flagged_urls, flagged_code_and_apis,
                 flagged_logging, flagged_intents, flagged_extras]
-    except:
+    except Exception as e:
+        print(f"Error: {e}")
         return [list(), list(), list(), list(), list(), list(), list()]
-'''
+
 def scan_folder(folder_path, scan_permissions, scan_urls, scan_code_and_apis, scan_policies, scan_logging, scan_intents, scan_extras):
     results = defaultdict(lambda: defaultdict(list))
     for root, dirs, files in os.walk(folder_path):

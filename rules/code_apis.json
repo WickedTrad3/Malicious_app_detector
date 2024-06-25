@@ -1,0 +1,97 @@
+[
+    {
+        "suspicious": "COMMAND_SEND_SMS",
+        "legitimate": "Used to send SMS messages.",
+        "abuse": "App may be sending SMS messages"
+    },
+    {
+        "suspicious": "getIMEI",
+        "legitimate": "Retrieves the device's IMEI.",
+        "abuse": "App may be using it for tracking or identifying the device"
+    },
+    {
+        "suspicious": "httpclient1",
+        "legitimate": "HTTP client usage.",
+        "abuse": "App may be using it for communicating with remote servers"
+    },
+    {
+        "suspicious": "HttpPost",
+        "legitimate": "Used for sending data via HTTP POST method.",
+        "abuse": "App may be sending data to a server, potentially for exfiltration of sensitive information"
+    },
+    {
+        "suspicious": "UrlEncodedFormEntity",
+        "legitimate": "Used in HTTP requests for sending data.",
+        "abuse": "App may be sending data to a server"
+    },
+    {
+        "suspicious": "invoke-direct \\{v6, v13\\}, Lorg/apache/http/client/methods/HttpPost;-><init>\\(Ljava/lang/String;\\)V",
+        "legitimate": "Indicates usage of HttpPost.",
+        "abuse": "App may be using it for sending data to a server"
+    },
+    {
+        "suspicious": "Landroid/telephony/SmsManager;->sendTextMessage",
+        "legitimate": "Sends SMS messages.",
+        "abuse": "App may be sending SMS messages"
+    },
+    {
+        "suspicious": "Ljavax/crypto/Cipher;->getInstance",
+        "legitimate": "Used for cryptographic operations.",
+        "abuse": "App may be encrypting data, possibly for exfiltration or locking user device"
+    },
+    {
+        "suspicious": "Landroid/content/ContentResolver;->query",
+        "legitimate": "Queries data from content providers.",
+        "abuse": "App may be querying data for theft"
+    },
+    {
+        "suspicious": "Landroid/hardware/Camera;->open",
+        "legitimate": "Opens the camera device.",
+        "abuse": "App may be taking pictures or recording videos without user consent"
+    },
+    {
+        "suspicious": "invoke-virtual \\{.*\\}, Ljava/lang/reflect/Method;->invoke",
+        "legitimate": "Indicates use of reflection.",
+        "abuse": "App may be using reflection to dynamically invoke code, possibly for obfuscation"
+    },
+    {
+        "suspicious": "requestWindowFeature",
+        "legitimate": "Requests a window feature.",
+        "abuse": "App may be mimicking system UI for phishing or capturing user input"
+    },
+    {
+        "suspicious": "PackageManager",
+        "legitimate": "Provides access to package information.",
+        "abuse": "App may be stealing information about installed apps"
+    },
+    {
+        "suspicious": "Calendar",
+        "legitimate": "Accesses calendar data.",
+        "abuse": "App may be accessing calendar events for sensitive information"
+    },
+    {
+        "suspicious": "System",
+        "legitimate": "General system usage.",
+        "abuse": "Needs clarification"
+    },
+    {
+        "suspicious": "sms",
+        "legitimate": "Indicates SMS functionality.",
+        "abuse": "General indication of SMS functions"
+    },
+    {
+        "suspicious": "click",
+        "legitimate": "Indicates click functionality.",
+        "abuse": "General indication of clickjacking or simulating user clicks"
+    },
+    {
+        "suspicious": "accessibility",
+        "legitimate": "Indicates accessibility functionality.",
+        "abuse": "Needs clarification"
+    },
+    {
+        "suspicious": "Android",
+        "legitimate": "General Android usage.",
+        "abuse": "General Android flag"
+    }
+]

@@ -1,0 +1,32 @@
+[
+    {
+        "suspicious": "valueOf",
+        "legitimate": "General usage.",
+        "abuse": "Needs clarification"
+    },
+    {
+        "suspicious": "concat",
+        "legitimate": "General usage.",
+        "abuse": "Needs clarification"
+    },
+    {
+        "suspicious": "<force-lock />",
+        "legitimate": "Locks the device.",
+        "abuse": "App may lock the device for ransomware"
+    },
+    {
+        "suspicious": "<wipe-data />",
+        "legitimate": "Wipes device data.",
+        "abuse": "App may wipe device data remotely for ransomware"
+    },
+    {
+        "suspicious": "<encrypted-storage />",
+        "legitimate": "Enforces encryption.",
+        "abuse": "App may enforce encryption for ransomware"
+    },
+    {
+        "suspicious": "<limit-password />",
+        "legitimate": "Enforces password policies.",
+        "abuse": "App enforces password policies, possibly to lock out user"
+    }
+]
