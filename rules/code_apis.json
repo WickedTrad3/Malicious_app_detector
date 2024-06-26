@@ -2,6 +2,7 @@
     {
         "suspicious": "COMMAND_SEND_SMS",
         "legitimate": "Used to send SMS messages.",
+        "category": "SMS and Communication",
         "abuse": "App may be sending SMS messages"
     },
     {
@@ -11,6 +12,11 @@
     },
     {
         "suspicious": "httpclient1",
+        "legitimate": "HTTP client usage.",
+        "abuse": "App may be using it for communicating with remote servers"
+    },
+    {
+        "suspicious": "httpclient",
         "legitimate": "HTTP client usage.",
         "abuse": "App may be using it for communicating with remote servers"
     },
@@ -25,17 +31,17 @@
         "abuse": "App may be sending data to a server"
     },
     {
-        "suspicious": "invoke-direct \\{v6, v13\\}, Lorg/apache/http/client/methods/HttpPost;-><init>\\(Ljava/lang/String;\\)V",
+        "suspicious": "HttpPost",
         "legitimate": "Indicates usage of HttpPost.",
         "abuse": "App may be using it for sending data to a server"
     },
     {
-        "suspicious": "Landroid/telephony/SmsManager;->sendTextMessage",
+        "suspicious": "sendTextMessage",
         "legitimate": "Sends SMS messages.",
-        "abuse": "App may be sending SMS messages"
+        "abuse": "App may be sending SMS messages unknowingly to user"
     },
     {
-        "suspicious": "Ljavax/crypto/Cipher;->getInstance",
+        "suspicious": "Cipher",
         "legitimate": "Used for cryptographic operations.",
         "abuse": "App may be encrypting data, possibly for exfiltration or locking user device"
     },
@@ -45,7 +51,7 @@
         "abuse": "App may be querying data for theft"
     },
     {
-        "suspicious": "Landroid/hardware/Camera;->open",
+        "suspicious": "Camera",
         "legitimate": "Opens the camera device.",
         "abuse": "App may be taking pictures or recording videos without user consent"
     },
@@ -80,6 +86,11 @@
         "abuse": "General indication of SMS functions"
     },
     {
+        "suspicious": "Landroid/telephony/SmsManager",
+        "legitimate": "Indicates SMS functionality.",
+        "abuse": "General indication of SMS functions"
+    },
+    {
         "suspicious": "click",
         "legitimate": "Indicates click functionality.",
         "abuse": "General indication of clickjacking or simulating user clicks"
@@ -93,5 +104,75 @@
         "suspicious": "Android",
         "legitimate": "General Android usage.",
         "abuse": "General Android flag"
+    },
+    {
+        "suspicious": "getLine1Number",
+        "legitimate": "Retrieves the phone number of the device.",
+        "abuse": "App may be using it for tracking or identifying the device"
+    },
+    {
+        "suspicious": "getDeviceId",
+        "legitimate": "Retrieves the device's IMEI.",
+        "abuse": "App may be using it for tracking or identifying the device"
+    },
+    {
+        "suspicious": "HttpURLConnection",
+        "legitimate": "HTTP client usage.",
+        "abuse": "App may be using it for communicating with remote servers"
+    },
+    {
+        "suspicious": "Context.openFileOutput",
+        "legitimate": "Opens a file for writing.",
+        "abuse": "App may be writing data to a file to be exfiltrated"
+    },
+    {
+        "suspicious": "getInstalledPackages",
+        "legitimate": "Retrieves information about installed packages.",
+        "abuse": "App may be stealing information about installed apps to be targeted for exploitation"
+    },
+    {
+        "suspicious": "MessageDigest",
+        "legitimate": "Used for cryptographic operations.",
+        "abuse": "May be used to verify the integrity of malicious payloads."
+    },
+    {
+        "suspicious": "requestLocationUpdates",
+        "legitimate": "Requests location updates.",
+        "abuse": "App may be tracking the device's location"
+    },
+    {
+        "suspicious": "MediaRecorder",
+        "legitimate": "Records audio and video.",
+        "abuse": "App may be recording audio or video without user consent"
+    },
+    {
+        "suspicious": "ClassLoader",
+        "legitimate": "Used for dynamic class loading.",
+        "abuse": "App may be loading classes dynamically for obfuscation"
+    },
+    {
+        "suspicious": "android.os.Build",
+        "legitimate": "Provides information about the device.",
+        "abuse": "App may be using it for tracking or identifying the device"
+    },
+    {
+        "suspicious": "SystemProperties.get()",
+        "legitimate": "Retrieves system properties.",
+        "abuse": "App may be using it for tracking or identifying the device"
+    },
+    {
+        "suspicious": "BluetoothAdapter",
+        "legitimate": "Manages Bluetooth functionality.",
+        "abuse": "App may be connecting to unauthorised devices or used for tracking"
+    },
+    {
+        "suspicious": "BluetoothDevice",
+        "legitimate": "Manages Bluetooth devices.",
+        "abuse": "App may be connecting to unauthorised devices or used for tracking"
+    },
+    {
+        "suspicious": "AccountManager",
+        "legitimate": "Manages user accounts.",
+        "abuse": "App may be stealing account information"
     }
 ]

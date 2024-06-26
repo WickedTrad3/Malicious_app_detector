@@ -13,6 +13,26 @@ import itertools
 def check_folders(directory, cwd, options):
     first_iteration = True
     android_manifest_found = False
+
+    output = {
+            "AndroidManifest": [],
+            "sms" : {},
+            "network": {
+                #file path: []
+            },
+            "device/user info": {},
+            "system/reflection": {},
+            "cryptography": {},
+            "file access/storage": {},
+            "location": {},
+            "audio and video": {},
+            "camera and media":{},
+            "accessibility and system settings":{},
+            "Content Providers and Databases": {},
+            "general intents": {},
+            "specific intents": {}
+        }
+
     json_create()
     for path, folders, files in os.walk(directory):
         for filename in files:
@@ -25,7 +45,7 @@ def check_folders(directory, cwd, options):
                     android_manifest_found = True
                 
                 file_path = os.path.join(path, filename)
-                results = rules.scan_file(file_path, cwd, options)
+                results = rules.scan_file(file_path, cwd, options,output)
                 if any(results):
                     '''
                     my_file = Path(cwd + "/flagged_files.json")
@@ -82,6 +102,8 @@ def generate_html_table(data):
 
     html += '</table>'
     html += '</body></html>'
+    html += '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>'
+    
 
     with open('flagged_results.html', 'w') as f:
         f.write(html)

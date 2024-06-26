@@ -105,42 +105,42 @@ def flag_suspicious_extras(content,cwd):
         flagged_extras.extend(matches)
     return list(flagged_extras)
 
-def flag_suspicious_patterns(content, patterns):
-    flagged_patterns = []
+def flag_suspicious_patterns(content, patterns, output, file_name):
     for pattern in patterns:
+        output[pattern["category"]][file_name] = []
         for match in re.finditer(pattern["suspicious"], content):
             line = content[match.start():content.find('\n', match.start())]
-            flagged_patterns.append({
-                "suspicious": line,
-                "legitimate": pattern.get("legitimate", ""),
-                "abuse": pattern.get("abuse", "")
-            })
-    return flagged_patterns
+            
+            output[pattern["category"]][file_name].append(line)
 
-def scan_file(file_path, cwd, options):
-    output = []
-    
+        output[pattern["category"]]['suspicious'] = pattern.get("legitimate", "")
+        output[pattern["category"]]['abuse'] = pattern.get("abuse", "")
+        
+    return output
+
+def scan_file(file_path, cwd, options, output):
+    file_name = file_path.split("/")[-1]
     
     try:
         with open(file_path, 'rb') as file:
             content = file.read()
         content = content.decode('utf-8', errors='ignore')
+        
         path_to_json = './rules/'
         json_files = [("./rules/" + pos_json) for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
         for file_path in json_files:
             try:
                 with open(file_path, "r") as outfile:
                     ruleset = json.load(outfile)
-                    output.append(flag_suspicious_patterns(content, ruleset) if options[file_path] else list())
+                    output = flag_suspicious_patterns(content, ruleset, output, file_name) if options[file_path] else list()
                 return output
             except (json.decoder.JSONDecodeError):
                 print("Error occured with "+ file_path)
-                output.append([])
             
 
     except Exception as e:
         print(f"Error: {e}")
-        return [list(), list(), list(), list(), list(), list(), list()]
+        return output
 
 
 '''
