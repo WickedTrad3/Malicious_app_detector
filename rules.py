@@ -7,143 +7,57 @@ from pathlib import Path
 from collections import defaultdict
 import fileinput
 
-def flag_suspicious_permissions(content,cwd):
-    
-    try:
-        with open(Path(cwd+"/rules/permissions.json"), "r") as outfile:
-            suspicious_permissions = json.load(outfile)
-    except:
-        print("cannot open ruleset permissions.json")
-        return ["cannot find ruleset"]
-    permissions = re.findall(r"android\.permission\.\w+", content)
-    return list([perm for perm in permissions if perm in suspicious_permissions])
 
-def flag_suspicious_urls(content,cwd):
-    flagged_urls = []
-
-    try:
-        with open(Path(cwd+"/rules/url.json"), "r") as outfile:
-            suspicious_urls = json.load(outfile)
-    except:
-        print("cannot open file url.json")
-        return ["cannot find ruleset"]
-
-    for url_pattern in suspicious_urls:
-        matches = re.findall(url_pattern, content)
-        flagged_urls.extend(matches)
-    return list(flagged_urls)
-
-def flag_suspicious_code_and_apis(content,cwd):
-    flagged_code_and_apis = []
-
-    try:
-        with open(Path(cwd+"/rules/code_apis.json"), "r") as outfile:
-            suspicious_code_and_apis = json.load(outfile)
-    except:
-        print("cannot open file code_apis.json")
-        return ["cannot find ruleset"]
-
-    for snippet in suspicious_code_and_apis:
-        matches = re.findall(".*?" + snippet+".*?\n", content)
-        flagged_code_and_apis.extend(matches)
-    flagged_code_and_apis = [intent.strip() for intent in flagged_code_and_apis]
-    
-    return list(flagged_code_and_apis)
-
-'''
-def flag_suspicious_policies(content):
-    return list([policy for policy in suspicious_policies if policy in content])
-'''
-def flag_suspicious_logging(content,cwd):
-    flagged_logging = []
-
-    try:
-        with open(Path(cwd+"/rules/logging.json"), "r") as outfile:
-            suspicious_logging = json.load(outfile)
-    except:
-        print("cannot open file logging.json")
-        return ["cannot find ruleset"]
-
-    for log in suspicious_logging:
-        matches = re.findall(".*?" + log +".*?\n", content)
-        flagged_logging.extend(matches)
-    return list(flagged_logging)
-
-def flag_suspicious_intents(file_path, content,cwd):
-    flagged_intents = []
-
-    try:
-        with open(Path(cwd+"/rules/intents.json"), "r") as outfile:
-            suspicious_intents = json.load(outfile)
-    except:
-        print("cannot open file intents.json")
-        return ["cannot find ruleset"]
-
-    for intent in suspicious_intents:
-        
-        if (file_path.split("/")[-1]== "AndroidManifest.xml"):
-            #<action android:name=”android.accessibilityservice.AccessibilityService”/>
-            matches = re.findall("<intent-filter>(.*?)</intent-filter>", content,  re.IGNORECASE | re.DOTALL)
-        else:
-            matches = re.findall(".*?" + intent+".*?\n", content, re.IGNORECASE)
-        flagged_intents.extend(matches)
-    flagged_intents = [intent.strip() for intent in flagged_intents]
-    return list(flagged_intents)
-
-def flag_suspicious_extras(content,cwd):
-    flagged_extras = []
-
-    try:
-        with open(Path(cwd+"/rules/extras.json"), "r") as outfile:
-            suspicious_extras = json.load(outfile)
-    except:
-        print("cannot open file extras.json")
-        return ["cannot find ruleset"]
-    
-    for extra in suspicious_extras:
-        matches = re.findall(".*?" + extra+".*?\n", content)
-        flagged_extras.extend(matches)
-    return list(flagged_extras)
-
-def flag_suspicious_patterns(content, patterns, output, file_name):
-    for pattern in patterns:
+def flag_suspicious_patterns(content, ruleset, output, file_name):
+    for pattern in ruleset:
         output[pattern["category"]][file_name] = []
         for match in re.finditer(pattern["suspicious"], content):
             line = content[match.start():content.find('\n', match.start())]
+            if (file_name == "AndroidManifest.xml"):
+                output["AndroidManifest"].append(line)
+            else:
             
-            output[pattern["category"]][file_name].append(line)
-
-        output[pattern["category"]]['suspicious'] = pattern.get("legitimate", "")
-        output[pattern["category"]]['abuse'] = pattern.get("abuse", "")
+                output[pattern["category"]][file_name].append({
+                    "suspicious": line,
+                    "legitimate": pattern.get("legitimate", ""),
+                    "abuse":pattern.get("abuse", "")
+                })
         
+        if (len(output[pattern["category"]][file_name]) == 0):
+            output[pattern["category"]].pop(file_name)
+    #if (len(output[pattern["category"]]) !=0):
+        #output[pattern["category"]]['suspicious'] = pattern.get("legitimate", "")
+        #output[pattern["category"]]['abuse'] = pattern.get("abuse", "")
     return output
 
 def scan_file(file_path, cwd, options, output):
-    file_name = file_path.split("/")[-1]
     
-    try:
-        with open(file_path, 'rb') as file:
-            content = file.read()
-        content = content.decode('utf-8', errors='ignore')
-        
-        path_to_json = './rules/'
-        json_files = [("./rules/" + pos_json) for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
-        for file_path in json_files:
-            try:
-                with open(file_path, "r") as outfile:
-                    ruleset = json.load(outfile)
-                    output = flag_suspicious_patterns(content, ruleset, output, file_name) if options[file_path] else list()
-                return output
-            except (json.decoder.JSONDecodeError):
-                print("Error occured with "+ file_path)
+    file_name = file_path.split("/")[-1]
+    #try:
+    with open(file_path, 'rb') as file:
+        content = file.read()
+    content = content.decode('utf-8', errors='ignore')
+    
+    path_to_json = './rules/'
+    json_files = [("./rules/" + pos_json) for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
+    
+    for rule_path in json_files:
+        try:
+            with open(rule_path, "r") as outfile:
+                ruleset = json.load(outfile)
             
-
+            flag_suspicious_patterns(content, ruleset, output, file_name) if options[rule_path] else list()
+            
+        except (json.decoder.JSONDecodeError):
+            print("Error occured with "+ rule_path)
+    return output
+'''
     except Exception as e:
         print(f"Error: {e}")
         return output
 
 
-'''
+
 def scan_file(file_path, scan_permissions, scan_urls, scan_code_and_apis, scan_intents, scan_logging, scan_extras):
     cwd = os.path.dirname(__file__)
     try:

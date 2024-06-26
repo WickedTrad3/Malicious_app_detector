@@ -16,21 +16,29 @@ def check_folders(directory, cwd, options):
 
     output = {
             "AndroidManifest": [],
-            "sms" : {},
-            "network": {
-                #file path: []
-            },
-            "device/user info": {},
-            "system/reflection": {},
-            "cryptography": {},
-            "file access/storage": {},
-            "location": {},
-            "audio and video": {},
-            "camera and media":{},
-            "accessibility and system settings":{},
+            "SMS and Communication":{},
+            "Device Information and System Interaction":{},
+            "Network Communication": {},
+            "Contacts and Communication": {},
+            "File and Data Handling": {},
+            "Cryptography and Data Storage": {},
+            "Media and Camera": {},
+            "System and Reflection":{},
+            "User Interface and Accessibility":{},
+            "Location and Communication": {},
             "Content Providers and Databases": {},
-            "general intents": {},
-            "specific intents": {}
+            "Audio and Video": {},
+            "Bluetooth and Communication": {},
+            "File Access and Storage": {},
+            "Camera and Media": {},
+            "Accessibility and System Settings": {},
+            "Potential obfuscation": {},
+            "Ransomware": {},
+            "Logging":{},
+            "General intent usage.": {},
+            "Intent mail function.": {},
+            "Intent communication.": {},
+            "Data related intent.": {}
         }
 
     json_create()
@@ -43,11 +51,11 @@ def check_folders(directory, cwd, options):
             if filename == "AndroidManifest.xml" or extension == "java" or extension == "smali":
                 if filename == "AndroidManifest.xml":
                     android_manifest_found = True
-                
                 file_path = os.path.join(path, filename)
-                results = rules.scan_file(file_path, cwd, options,output)
-                if any(results):
-                    '''
+                
+                output = rules.scan_file(file_path, cwd, options,output)
+                #if any(results):
+                '''
                     my_file = Path(cwd + "/flagged_files.json")
                     print("file not found")
                     if ((not my_file.is_file()) and first_iteration):
@@ -55,20 +63,21 @@ def check_folders(directory, cwd, options):
                         json_create()
                         first_iteration = False
                         '''
-                    json_update({file_path:results})
+    json_update(output)
                     
 
     if not android_manifest_found:
         print("Android Manifest.xml not found")
 
 
-def json_update(file_info):
+def json_update(output):
+    '''
     with open("flagged_files.json", "r") as outfile:
         data = json.load(outfile)
     file_name = list(file_info.keys())[0]
-    data[file_name] = file_info[file_name]
+    data[file_name] = file_info[file_name]'''
     with open("flagged_files.json", "w+") as outfile:
-        json.dump(data, outfile, indent=1)
+        json.dump(output, outfile, indent=1)
 
 def json_create():
     with open("flagged_files.json", "w+") as outfile:
