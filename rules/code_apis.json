@@ -2,7 +2,7 @@
     {
         "suspicious": "COMMAND_SEND_SMS",
         "legitimate": "Used to send SMS messages.",
-        "category": "SMS and Communication",
+        "category": "Communication",
         "abuse": "App may be sending SMS messages"
     },
     {
@@ -44,25 +44,25 @@
     {
         "suspicious": "sendTextMessage",
         "legitimate": "Sends SMS messages.",
-        "category": "SMS and Communication",
+        "category": "Communication",
         "abuse": "App may be sending SMS messages unknowingly to user"
     },
     {
         "suspicious": "sendMultipartTextMessage",
         "legitimate": "Sends SMS messages.",
-        "category": "SMS and Communication",
+        "category": "Communication",
         "abuse": "App may be sending SMS messages unknowingly to user"
     },
     {
         "suspicious": "sendDataMessage",
         "legitimate": "Sends SMS messages.",
-        "category": "SMS and Communication",
+        "category": "Communication",
         "abuse": "App may be sending SMS messages unknowingly to user"
     },
     {
         "suspicious": "Cipher",
         "legitimate": "Used for cryptographic operations.",
-        "category": "Cryptography and Data Storage",
+        "category": "Cryptography",
         "abuse": "App may be encrypting data, possibly for exfiltration or locking user device"
     },
     {
@@ -74,7 +74,7 @@
     {
         "suspicious": "Camera",
         "legitimate": "Opens the camera device.",
-        "category": "Media and Camera",
+        "category": "Audio and Video",
         "abuse": "App may be taking pictures or recording videos without user consent"
     },
     {
@@ -86,7 +86,7 @@
     {
         "suspicious": "requestWindowFeature",
         "legitimate": "Requests a window feature.",
-        "category": "User Interface and Accessibility",
+        "category": "User Interface",
         "abuse": "App may be mimicking system UI for phishing or capturing user input"
     },
     {
@@ -110,25 +110,25 @@
     {
         "suspicious": "sms",
         "legitimate": "Indicates SMS functionality.",
-        "category": "SMS and Communication",
+        "category": "Communication",
         "abuse": "General indication of SMS functions"
     },
     {
         "suspicious": "Landroid/telephony/SmsManager",
         "legitimate": "Indicates SMS functionality.",
-        "category": "SMS and Communication",
+        "category": "Communication",
         "abuse": "General indication of SMS functions"
     },
     {
         "suspicious": "click",
         "legitimate": "Indicates click functionality.",
-        "category": "User Interface and Accessibility",
+        "category": "User Interface",
         "abuse": "General indication of clickjacking or simulating user clicks"
     },
     {
         "suspicious": "accessibility",
         "legitimate": "Indicates accessibility functionality.",
-        "category": "User Interface and Accessibility",
+        "category": "Accessibility and System Settings",
         "abuse": "Needs clarification"
     },
     {
@@ -158,7 +158,7 @@
     {
         "suspicious": "Context.openFileOutput",
         "legitimate": "Opens a file for writing.",
-        "category": "Cryptography and Data Storage",
+        "category": "File and Data Handling",
         "abuse": "App may be writing data to a file to be exfiltrated"
     },
     {
@@ -170,13 +170,13 @@
     {
         "suspicious": "MessageDigest",
         "legitimate": "Used for cryptographic operations.",
-        "category": "Cryptography and Data Storage",
+        "category": "Cryptography",
         "abuse": "May be used to verify the integrity of malicious payloads."
     },
     {
         "suspicious": "requestLocationUpdates",
         "legitimate": "Requests location updates.",
-        "category": "Location and Communication",
+        "category": "Location",
         "abuse": "App may be tracking the device's location"
     },
     {
@@ -206,13 +206,13 @@
     {
         "suspicious": "BluetoothAdapter",
         "legitimate": "Manages Bluetooth functionality.",
-        "category": "Bluetooth and Communication",
+        "category": "Bluetooth",
         "abuse": "App may be connecting to unauthorised devices or used for tracking"
     },
     {
         "suspicious": "BluetoothDevice",
         "legitimate": "Manages Bluetooth devices.",
-        "category": "Bluetooth and Communication",
+        "category": "Bluetooth",
         "abuse": "App may be connecting to unauthorised devices or used for tracking"
     },
     {
@@ -356,85 +356,85 @@
     {
         "suspicious": "Ljavax/crypto/Cipher;->getInstance",
         "legitimate": "Gets a cryptographic cipher instance.",
-        "category": "Cryptography and Data Storage",
+        "category": "Cryptography",
         "abuse": "App may be encrypting data for malicious purposes."
     },
     {
         "suspicious": "Ljavax/crypto/Cipher;->doFinal",
         "legitimate": "Completes a cryptographic operation.",
-        "category": "Cryptography and Data Storage",
+        "category": "Cryptography",
         "abuse": "App may be completing encryption for malicious purposes."
     },
     {
         "suspicious": "Ljava/security/KeyFactory;->generatePrivate",
         "legitimate": "Generates a private key.",
-        "category": "Cryptography and Data Storage",
+        "category": "Cryptography",
         "abuse": "App may be generating keys for malicious encryption."
     },
     {
         "suspicious": "Ljava/security/KeyFactory;->generatePublic",
         "legitimate": "Generates a public key.",
-        "category": "Cryptography and Data Storage",
+        "category": "Cryptography",
         "abuse": "App may be generating keys for malicious encryption."
     },
     {
         "suspicious": "Ljavax/crypto/spec/SecretKeySpec",
         "legitimate": "Specifies a secret key.",
-        "category": "Cryptography and Data Storage",
+        "category": "Cryptography",
         "abuse": "App may be specifying keys for malicious encryption."
     },
     {
         "suspicious": "Ljava/security/spec/PBEKeySpec",
         "legitimate": "Specifies a password-based encryption key.",
-        "category": "Cryptography and Data Storage",
+        "category": "Cryptography",
         "abuse": "App may be specifying keys for malicious encryption."
     },
     {
         "suspicious": "Ljava/io/File;->listFiles",
         "legitimate": "Lists files in a directory.",
-        "category": "File Access and Storage",
+        "category": "File and Data Handling",
         "abuse": "App may be accessing files for malicious purposes."
     },
     {
         "suspicious": "Ljava/io/FileReader;->read",
         "legitimate": "Reads a file.",
-        "category": "File Access and Storage",
+        "category": "File and Data Handling",
         "abuse": "App may be reading files for malicious purposes."
     },
     {
         "suspicious": "Ljava/io/FileOutputStream;->write",
         "legitimate": "Writes to a file.",
-        "category": "File Access and Storage",
+        "category": "File and Data Handling",
         "abuse": "App may be writing malicious data to files."
     },
     {
         "suspicious": "Ljava/io/FileInputStream;->read",
         "legitimate": "Reads from a file.",
-        "category": "File Access and Storage",
+        "category": "File and Data Handling",
         "abuse": "App may be reading files for malicious purposes."
     },
     {
         "suspicious": "Ljava/io/File;->delete",
         "legitimate": "Deletes a file.",
-        "category": "File Access and Storage",
+        "category": "File and Data Handling",
         "abuse": "App may be deleting files for malicious purposes."
     },
     {
         "suspicious": "Landroid/os/Environment;->getExternalStorageDirectory",
         "legitimate": "Gets the external storage directory.",
-        "category": "File Access and Storage",
+        "category": "File and Data Handling",
         "abuse": "App may be accessing external storage for malicious purposes."
     },
     {
         "suspicious": "Landroid/location/LocationManager;->getLastKnownLocation",
         "legitimate": "Gets the last known location.",
-        "category": "Location and Communication",
+        "category": "Location",
         "abuse": "App may be tracking the device's location."
     },
     {
         "suspicious": "Landroid/location/LocationListener;->onLocationChanged",
         "legitimate": "Listens for location changes.",
-        "category": "Location and Communication",
+        "category": "Location",
         "abuse": "App may be tracking the device's location."
     },
     {
@@ -446,7 +446,7 @@
     {
         "suspicious": "Landroid/hardware/Camera;->takePicture",
         "legitimate": "Takes a picture.",
-        "category": "Camera and Media",
+        "category": "Audio and Video",
         "abuse": "App may be taking pictures without consent."
     },
     {

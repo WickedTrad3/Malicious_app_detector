@@ -8,19 +8,19 @@
     {
         "suspicious": "android.permission.SEND_SMS",
         "legitimate": "Allows an application to send SMS messages.",
-        "category": "SMS and Communication",
+        "category": "Communication",
         "abuse": "App may be sending messages unknowingly for phishing or spam"
     },
     {
         "suspicious": "android.permission.READ_SMS",
         "legitimate": "Allows an application to read SMS messages.",
-        "category": "SMS and Communication",
+        "category": "Communication",
         "abuse": "App may be reading sensitive messages such as verification codes"
     },
     {
         "suspicious": "android.permission.WRITE_SMS",
         "legitimate": "(Obsolete, removed in API level 23) Allows an application to write SMS messages.",
-        "category": "SMS and Communication",
+        "category": "Communication",
         "abuse": "App may be sending messages unknowingly for phishing or spam"
     },
     {
@@ -50,13 +50,13 @@
     {
         "suspicious": "android.permission.ACCESS_FINE_LOCATION",
         "legitimate": "Allows an app to access precise location.",
-        "category": "Location and Communication",
+        "category": "Location",
         "abuse": "App may be tracking the user's location"
     },
     {
         "suspicious": "android.permission.READ_CONTACTS",
         "legitimate": "Allows an application to read the user's contacts data.",
-        "category": "Contacts and Communication",
+        "category": "Communication",
         "abuse": "App may be reading contacts for phishing or spamming"
     },
     {
@@ -80,7 +80,7 @@
     {
         "suspicious": "android.permission.CALL_PHONE",
         "legitimate": "Allows an application to initiate a phone call without going through the Dialer user interface for the user to confirm the call.",
-        "category": "SMS and Communication",
+        "category": "Communication",
         "abuse": "App may be initiating phone calls without user consent"
     }
 ]
