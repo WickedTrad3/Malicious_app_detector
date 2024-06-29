@@ -14,7 +14,11 @@ def flag_suspicious_patterns(content, ruleset, output, file_name):
         for match in re.finditer(pattern["suspicious"], content):
             line = content[match.start():content.find('\n', match.start())]
             if (file_name == "AndroidManifest.xml"):
-                output["AndroidManifest"].append(line)
+                output["AndroidManifest"].append({
+                    "suspicious": line,
+                    "legitimate": pattern.get("legitimate", ""),
+                    "abuse":pattern.get("abuse", "")
+                })
             else:
             
                 output[pattern["category"]][file_name].append({
