@@ -13,30 +13,18 @@ import itertools
 def check_folders(directory, cwd, options):
     first_iteration = True
     android_manifest_found = False
-
-    output = {
-        "AndroidManifest": [],
-        "SMS and Communication": {},
-        "Device Information and System Interaction": {},
-        "Network Communication": {},
-        "Contacts and Communication": {},
-        "File and Data Handling": {},
-        "Cryptography": {},
-        "Media and Camera": {},
-        "System and Reflection": {},
-        "User Interface": {},
-        "Location": {},
-        "Content Providers and Databases": {},
-        "Audio and Video": {},
-        "Bluetooth": {},
-        "Accessibility and System Settings": {},
-        "Potential obfuscation": {},
-        "Ransomware": {},
-        "Logging": {},
-        "General intent usage": {},
-        "Communication": {},
-        "Data related intent": {}
-    }
+    path_to_json = './rules/'
+    json_files = [("./rules/" + pos_json) for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
+    output = {}
+    for rule_path in json_files:
+        try:
+            with open(rule_path, "r") as outfile:
+                ruleset = json.load(outfile)
+            if (options[rule_path]):
+                create_output(ruleset, rule_path.split("/")[-1].split(".")[0], output)
+        except (json.decoder.JSONDecodeError):
+            print("Error occured with "+ rule_path)
+    
 
     json_create()
     for path, folders, files in os.walk(directory):
@@ -51,6 +39,7 @@ def check_folders(directory, cwd, options):
                 file_path = os.path.join(path, filename)
                 
                 output = rules.scan_file(file_path, cwd, options,output)
+                
                 #if any(results):
                 '''
                     my_file = Path(cwd + "/flagged_files.json")
@@ -63,11 +52,13 @@ def check_folders(directory, cwd, options):
     json_update(output)
     return output
     
-                    
-
-    if not android_manifest_found:
-        print("Android Manifest.xml not found")
-
+def create_output(ruleset, ruleset_name, output):
+    
+    output[ruleset_name] = {}
+    for pattern in ruleset:
+        if (ruleset_name =="code_apis"):
+            output[ruleset_name][pattern["category"]] = {}
+    return output
 
 def json_update(output):
     '''

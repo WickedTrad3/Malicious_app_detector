@@ -8,31 +8,56 @@ from collections import defaultdict
 import fileinput
 
 
-def flag_suspicious_patterns(content, ruleset, output, file_name):
+def flag_suspicious_patterns(content, ruleset, ruleset_name, output, file_name):
+    if (ruleset_name !="code_apis" and file_name not in output[ruleset_name]):
+        output[ruleset_name][file_name] = []
     for pattern in ruleset:
-        output[pattern["category"]][file_name] = []
+        if (ruleset_name =="code_apis" and file_name not in output[ruleset_name][pattern["category"]]):
+             output[ruleset_name][pattern["category"]][file_name] = []
         for match in re.finditer(pattern["suspicious"], content):
             line = content[match.start():content.find('\n', match.start())]
-            if (file_name == "AndroidManifest.xml"):
-                output["AndroidManifest"].append({
+            
+            if (file_name == "AndroidManifest.xml" and ruleset_name =="permissions"):
+                print(output[ruleset_name])
+                print()
+                output[ruleset_name][file_name].append({
+                    "suspicious": line,
+                    "legitimate": pattern.get("legitimate", ""),
+                    "abuse":pattern.get("abuse", "")
+                })
+                
+            elif (ruleset_name =="code_apis"):
+                output[ruleset_name][pattern["category"]][file_name].append({
                     "suspicious": line,
                     "legitimate": pattern.get("legitimate", ""),
                     "abuse":pattern.get("abuse", "")
                 })
             else:
-            
-                output[pattern["category"]][file_name].append({
+                
+                output[ruleset_name][file_name].append({
                     "suspicious": line,
                     "legitimate": pattern.get("legitimate", ""),
                     "abuse":pattern.get("abuse", "")
                 })
         
-        if (len(output[pattern["category"]][file_name]) == 0):
-            output[pattern["category"]].pop(file_name)
+        if (ruleset_name =="code_apis"):
+            if (len(output[ruleset_name][pattern["category"]][file_name])==0):
+                
+                output[ruleset_name][pattern["category"]].pop(file_name)
+    
+    if (ruleset_name != "code_apis" ):
+        
+        if (len(output[ruleset_name][file_name]) == 0):
+            
+            output[ruleset_name].pop(file_name)
+        
+
     #if (len(output[pattern["category"]]) !=0):
         #output[pattern["category"]]['suspicious'] = pattern.get("legitimate", "")
         #output[pattern["category"]]['abuse'] = pattern.get("abuse", "")
     return output
+
+
 
 def scan_file(file_path, cwd, options, output):
     
@@ -44,13 +69,14 @@ def scan_file(file_path, cwd, options, output):
     
     path_to_json = './rules/'
     json_files = [("./rules/" + pos_json) for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
+        
     
     for rule_path in json_files:
         try:
             with open(rule_path, "r") as outfile:
                 ruleset = json.load(outfile)
-            
-            flag_suspicious_patterns(content, ruleset, output, file_name) if options[rule_path] else list()
+            if (options[rule_path]):
+                output = flag_suspicious_patterns(content, ruleset, rule_path.split("/")[-1].split(".")[0], output, file_name)
             
         except (json.decoder.JSONDecodeError):
             print("Error occured with "+ rule_path)

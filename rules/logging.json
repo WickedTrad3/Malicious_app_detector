@@ -2,31 +2,26 @@
     {
         "suspicious": "Log.v",
         "legitimate": "Logging functions.",
-        "category": "Logging",
         "abuse": "May be used to log sensitive information for exfiltration"
     },
     {
         "suspicious": "Log.d",
         "legitimate": "Logging functions.",
-        "category": "Logging",
         "abuse": "May be used to log sensitive information for exfiltration"
     },
     {
         "suspicious": "Log.i",
         "legitimate": "Logging functions.",
-        "category": "Logging",
         "abuse": "May be used to log sensitive information for exfiltration"
     },
     {
         "suspicious": "Log.w",
         "legitimate": "Logging functions.",
-        "category": "Logging",
         "abuse": "May be used to log sensitive information for exfiltration"
     },
     {
         "suspicious": "Log.e",
         "legitimate": "Logging functions.",
-        "category": "Logging",
         "abuse": "May be used to log sensitive information for exfiltration"
     }
 ]

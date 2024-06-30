@@ -2,67 +2,56 @@
     {
         "suspicious": "Intent",
         "legitimate": "General intent usage.",
-        "category": "General intent usage",
         "abuse": "General indication of intent usage"
     },
     {
         "suspicious": "mail",
         "legitimate": "Indicates mail functionality.",
-        "category": "Communication",
         "abuse": "General indication of mail function"
     },
     {
         "suspicious": "sendto",
         "legitimate": "Indicates sending data.",
-        "category": "Communication",
         "abuse": "May be used to send data out, potentially exfiltrating sensitive information."
     },
     {
         "suspicious": "ACTION_SEND",
         "legitimate": "Indicates sending data.",
-        "category": "Communication",
         "abuse": "App may be sending data for malicious purposes."
     },
     {
         "suspicious": "ACTION_SENDTO",
         "legitimate": "Indicates sending data to a URI.",
-        "category": "Communication",
         "abuse": "App may be sending data to malicious destinations."
     },
     {
         "suspicious": "ACTION_VIEW",
         "legitimate": "Indicates viewing data.",
-        "category": "Data related intent",
         "abuse": "App may be viewing data for malicious purposes."
     },
     {
         "suspicious": "ACTION_PICK",
         "legitimate": "Indicates picking data.",
-        "category": "Data related intent",
         "abuse": "App may be picking data for malicious purposes."
     },
     {
         "suspicious": "ACTION_CALL",
         "legitimate": "Indicates calling functionality.",
-        "category": "Communication",
         "abuse": "App may be making calls for malicious purposes."
     },
     {
         "suspicious": "ACTION_ANSWER",
         "legitimate": "Indicates answering functionality.",
-        "category": "Communication",
         "abuse": "App may be answering calls for malicious purposes."
     },
     {
         "suspicious": "ACTION_INSERT",
         "legitimate": "Indicates inserting data.",
-        "category": "Data related intent",
         "abuse": "App may be inserting data for malicious purposes."
     },
     {
         "suspicious": "ACTION_DELETE",
         "legitimate": "Indicates deleting data.",
-        "category": "Data related intent",
         "abuse": "App may be deleting data for malicious purposes."
     }
 ]
