@@ -101,21 +101,25 @@ def generate_html_table(data):
     #html += '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>'
     #html += '<table border="1">'
     #html += '<tr><th>C</th><th>Category</th><th>Details</th><th>Legitimate Use</th><th>Abuse</th></tr>'
-    html += '<div>Categories</div>'
-    html+= '<div class="accordion" id="accordionPanels">'
+    html += '<div class="container"><h1>Categories</h1>'
+    html+= '<div class="accordion accordion-flush bg-primary" id="accordionPanels">'
     for category, files in data.items():
         count+=1
-        html += f'<div class="accordion-item"><h2 class="accordion-header" id="panelsStayOpen-heading{count}"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapse{count}" aria-expanded="true" aria-controls="panelsStayOpen-collapse{count}">{category}</button></h2>'
-        html += f'<div id="panelsStayOpen-collapse{count}" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-heading{count}"><div class="accordion-body"><table class="table"><thead class="thead-dark"><tr><th scope="col">File Name</th><th scope="col">Details</th><th scope="col">Legitimate Use</th><th>Abuse</th></tr></thead><tbody>'
+        html += f'<div class="accordion-item"><h2 class="accordion-header" id="panelsStayOpen-heading{count}"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapse{count}" aria-expanded="false" aria-controls="panelsStayOpen-collapse{count}">{category}</button></h2>'
+        
+        if (category == "AndroidManifest"):
+            html += f'<div id="panelsStayOpen-collapse{count}" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-heading{count}" data-bs-parent="#accordionPanels"><div class="accordion-body"><table class="table"><thead class="thead-dark"><th scope="col">Details</th><th scope="col">Legitimate Use</th><th>Abuse</th></tr></thead><tbody>'
+        else:
+            html += f'<div id="panelsStayOpen-collapse{count}" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-heading{count}" data-bs-parent="#accordionPanels"><div class="accordion-body"><table class="table"><thead class="thead-dark"><tr><th scope="col">File Name</th><th scope="col">Details</th><th scope="col">Legitimate Use</th><th>Abuse</th></tr></thead><tbody>'
         for num, file in enumerate(files):
             if (category == "AndroidManifest"):
-                html+=f'<tr><th scope="col">{file}</th><th scope="col">{data[category][num]["suspicious"]}</th><th scope="col">{data[category][num]["legitimate"]}</th><th scope="col">{data[category][num]["abuse"]}</th></tr>'
+                html+=f'<th scope="col">{data[category][num]["suspicious"]}</th><th scope="col">{data[category][num]["legitimate"]}</th><th scope="col">{data[category][num]["abuse"]}</th></tr>'
             else:
                 for flagged in data[category][file]:
                     html+=f'<tr><th scope="col">{file}</th><th scope="col">{flagged["suspicious"]}</th><th scope="col">{flagged["legitimate"]}</th><th scope="col">{flagged["abuse"]}</th></tr>'
         html +='</tbody></table></div></div>'
 
-    html +='</div>'
+    html +='</div></div>'
     '''
     for file, info in enumerate(files):
         html += f'<tr><td>{file_name}</td><td>{category_name}</td><td>{details}</td><td>{legitimate}</td><td>{abuse}</td></tr>'
