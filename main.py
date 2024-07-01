@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# python3 2.12.3
 import os
 from pathlib import Path
 import rules
@@ -140,13 +141,13 @@ def generate_html_table(data, directory):
     html += '\n<div class="accordion container" id="accordionPanel">\n'
     for section, files in data.items():
         html += '\t<div class="accordion-item">\n'
-        html += f'\t\t<h2 class="accordion-header" id="heading{section.replace(' ', '')}">\n'
+        html += f'\t\t<h2 class="accordion-header" id="heading{section.replace(" ", "")}">\n'
         html += f'\t\t\t<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{section}" aria-expanded="false" aria-controls="collapse{section}">{section}</button></h2>\n'
-        html += f'\t\t\t\t<div id="collapse{section}" class="accordion-collapse collapse" aria-labelledby="heading{section.replace(' ', '')}" data-bs-parent="#accordionPanel">\n'
+        html += f'\t\t\t\t<div id="collapse{section}" class="accordion-collapse collapse" aria-labelledby="heading{section.replace(" ", "")}" data-bs-parent="#accordionPanel">\n'
         html += f'\t\t\t\t\t<div class="accordion-body">\n'
 
         if (section == "code_apis"):
-            html += f'\t\t\t\t\t\t<div class="accordion" id="sub-accordion{section.replace(' ', '')}">\n'
+            html += f'\t\t\t\t\t\t<div class="accordion" id="sub-accordion{section.replace(" ", "")}">\n'
 
             for sub_section, files in data[section].items():
                 if (len(files)==0):
@@ -154,9 +155,9 @@ def generate_html_table(data, directory):
                 else:
                     empty = True
                 html += '\t\t\t\t\t\t\t<div class="accordion-item">\n'
-                html += f'\t\t\t\t\t\t\t<h2 class="accordion-header" id="sub-heading{sub_section.replace(' ', '')}">\n'
-                html += f'\t\t\t\t\t\t\t<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#sub-collapse{sub_section.replace(' ', '')}" aria-expanded="false" aria-controls="collapse{sub_section.replace(' ', '')}">{sub_section}</h2>\n'
-                html += f'\t\t\t\t\t\t\t\t<div id="sub-collapse{sub_section.replace(' ', '')}" class="accordion-collapse collapse" aria-labelledby="sub-heading{sub_section.replace(' ', '')}" data-bs-parent="#sub-accordion{section.replace(' ', '')}">\n'
+                html += f'\t\t\t\t\t\t\t<h2 class="accordion-header" id="sub-heading{sub_section.replace(" ", "")}">\n'
+                html += f'\t\t\t\t\t\t\t<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#sub-collapse{sub_section.replace(" ", "")}" aria-expanded="false" aria-controls="collapse{sub_section.replace(" ", "")}">{sub_section}</h2>\n'
+                html += f'\t\t\t\t\t\t\t\t<div id="sub-collapse{sub_section.replace(" ", "")}" class="accordion-collapse collapse" aria-labelledby="sub-heading{sub_section.replace(" ", "")}" data-bs-parent="#sub-accordion{section.replace(" ", "")}">\n'
                 html += '\t\t\t\t\t\t\t\t\t<div class="accordion-body">\n'
                 html += '\t\t\t\t\t\t\t\t\t<table class="table table-dark table-striped"><tr><th>File Name</th><th>Details</th><th>Legitimate Use</th><th>Abuse</th></tr>\n'
                 for file_name, list_details in files.items():
