@@ -18,8 +18,6 @@ def flag_suspicious_patterns(content, ruleset, ruleset_name, output, file_name):
             line = content[match.start():content.find('\n', match.start())]
             
             if (file_name == "AndroidManifest.xml" and ruleset_name =="permissions"):
-                print(output[ruleset_name])
-                print()
                 output[ruleset_name][file_name].append({
                     "suspicious": line,
                     "legitimate": pattern.get("legitimate", ""),
@@ -80,6 +78,7 @@ def scan_file(file_path, cwd, options, output):
             
         except (json.decoder.JSONDecodeError):
             print("Error occured with "+ rule_path)
+
     return output
 '''
     except Exception as e:
