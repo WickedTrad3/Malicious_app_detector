@@ -87,28 +87,55 @@ def decompile(directory, cwd, method, outputpath):
     elif sys.platform == "win32":
         process = subprocess.Popen([os.path.normpath(cwd + "decompile.bat"), directory], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()  # Wait for process to complete.
+    try:
+        with open(directory, "rb") as file:
+            content = file.read()
+            content = content.decode('utf-8', errors='ignore')
+            digest = hashlib.file_digest(file, "md5")
+        if (method == "java"):
+            with open(outputpath+"/jadx_decompiled/resources/AndroidManifest.xml", "r", encoding="utf-8") as file:
+                content = file.read()
 
-    with open(directory, "rb") as file:
-        content = file.read()
-        content = content.decode('utf-8', errors='ignore')
-        digest = hashlib.file_digest(file, "md5")
-        package_name = re.search(r'package=\".*\"', content)
-    stat = {
-        "file_size": os.stat(directory).st_size/1000000,
-        "MD5": digest.hexdigest(),
-        "package name": package_name
-    }
+        elif (method == "smali"):
+            with open(outputpath+"/apktool_decompiled/AndroidManifest.xml", "r", encoding="utf-8") as file:
+                content = file.read()
+        package_name = re.findall(r'(package=\")(.*?)(\")', content)[0][1]
+        stat = {
+            "file_size": os.stat(directory).st_size/1000000,
+            "MD5": digest.hexdigest(),
+            "package name": package_name
+        }
 
-    with open(outputpath+'file_stat.json', 'w') as outfile:
-        json.dump(stat, outfile, indent=1)
+        with open(outputpath+'/file_stat.json', 'w') as outfile:
+            json.dump(stat, outfile, indent=1)
+    except:
+        print("Error: Output folder '"+args.output+"' cannot be written into. Please check the folder and try again.")
 
-def generate_html_table(data):
+def generate_html_table(data, directory):
     count=0
-    
+    try:
+        with open(directory+"/file_stat.json", "rb") as file:
+            content = json.load(file)
+    except:
+        print("Error: file_stats.json not found. Please check if path is a decompiled apk and try again.")
+        content = {
+            "file_size": None,
+            "MD5": None,
+            "package name": None
+        }
+    empty = True
     html = '<html><head><title>Flagged Results</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous"><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script></head><body>'
-    #html += '<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>'
-    #html += '<table border="1">'
-    #html += '<tr><th>C</th><th>Category</th><th>Details</th><th>Legitimate Use</th><th>Abuse</th></tr>'
+
+    html += '\n<div class="container"><div class="row">'
+    html += f'<div class="col"><p>Package name:</p></div><div class="col"><p>{content["package name"]}</p></div></div>'
+    
+    html += '<div class="row">'
+    html += f'<div class="col"><p>File size:</p></div><div class="col"><p>{content["file_size"]}MB</p></div></div>'
+    
+    html += '<div class="row">'
+    html += f'<div class="col"><p>MD5:</p></div><div class="col"><p>{content["MD5"]}</p></div></div>'
+
+
     html += '\n<h1 class="text-center">Categories</h1>\n'
     html += '\n<div class="accordion container" id="accordionPanel">\n'
     for section, files in data.items():
@@ -122,6 +149,10 @@ def generate_html_table(data):
             html += f'\t\t\t\t\t\t<div class="accordion" id="sub-accordion{section.replace(' ', '')}">\n'
 
             for sub_section, files in data[section].items():
+                if (len(files)==0):
+                    empty = False
+                else:
+                    empty = True
                 html += '\t\t\t\t\t\t\t<div class="accordion-item">\n'
                 html += f'\t\t\t\t\t\t\t<h2 class="accordion-header" id="sub-heading{sub_section.replace(' ', '')}">\n'
                 html += f'\t\t\t\t\t\t\t<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#sub-collapse{sub_section.replace(' ', '')}" aria-expanded="false" aria-controls="collapse{sub_section.replace(' ', '')}">{sub_section}</h2>\n'
@@ -138,6 +169,11 @@ def generate_html_table(data):
 
 
         else:
+            if (len(files)==0):
+                empty = True  
+            else:
+                empty = True    
+            
             if (section == "permissions"):
                 html += '\t\t\t\t\t\t<table class="table table-dark table-striped"><tr><th>Details</th><th>Legitimate Use</th><th>Abuse</th></tr>\n'
                 for file_name, list_details in files.items():
@@ -154,64 +190,13 @@ def generate_html_table(data):
         html += '\t\t\t\t\t</div>\n'
         html += '\t\t\t\t</div>\n'
         html += '\t</div>\n'
-    
-    
-    '''
-    html += '<div class="container"><h1>Categories</h1>'
-    html+= '<div class="accordion" id="accordionPanels">'
-    for sections, files in data.items():
-        count+=1
-        html += f'<div class="accordion-item">'
-        html += f'<h2 class="accordion-header" id="panelsStayOpen-heading{count}">'
-        html += f'<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapse{count}" aria-expanded="false" aria-controls="panelsStayOpen-collapse{count}">{sections}</button></h2>'
-        
-        
-        if (sections == "code_apis"):
-            html += f'<div id="panelsStayOpen-collapse{count}" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-heading{count}" data-bs-parent="#accordionPanels"><div class="accordion-body">'
-            html += '<div class="accordion-body">'
-            html += f'<div class="accordion" id="sub-accordion{sections}">'
-            for sub_section, flagged_files in data[sections].items():
-                #html += f'<div class="accordion" id="sub-accordion{sub_section.split()[0]}"><div class="accordion-item">'
-                
-                html += f'<div class="accordion-item">'
-                html == f'<h2 class="accordion-header" id="sub-heading{sub_section.split()[0]}">'
-                html += f'<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sub-collapse{sub_section.split()[0]}" aria-expanded="false" aria-controls="panelsStayOpen-collapse{count}">{sub_section}</button></h2>'
-                html += f'<div id="sub-collapse{sub_section}" class="accordion-collapse collapse" aria-labelledby="sub-heading{sub_section.split()[0]}" data-bs-parent="sub-accordion{sections}"><div class="accordion-body"><table class="table"><thead class="thead-dark"><th scope="col">Details</th><th scope="col">Legitimate Use</th><th>Abuse</th></tr></thead><tbody>'
-                for flagged_name, flagged_strings in flagged_files.items():
-                    for string in flagged_strings:
-                        html+=f'<tr><th scope="col">{flagged_name}</th><th scope="col">{string["suspicious"]}</th><th scope="col">{string["legitimate"]}</th><th scope="col">{string["abuse"]}</th></tr>'
-                html +='</tbody></table></div></div></div>'
-        html +='</div></div></div></div>'
-        '''
-    '''
-        else:
-            html+='<table class="table"><thead class="thead-dark"><th scope="col">Details</th><th scope="col">Legitimate Use</th><th>Abuse</th></tr></thead><tbody>'
-            if (sections == "permissions"):
-                html += f'<div id="panelsStayOpen-collapse{count}" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-heading{count}" data-bs-parent="#accordionPanels"><div class="accordion-body"><table class="table"><thead class="thead-dark"><th scope="col">Details</th><th scope="col">Legitimate Use</th><th>Abuse</th></tr></thead><tbody>'
-            else:
-                html += f'<div id="panelsStayOpen-collapse{count}" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-heading{count}" data-bs-parent="#accordionPanels"><div class="accordion-body"><table class="table"><thead class="thead-dark"><tr><th scope="col">File Name</th><th scope="col">Details</th><th scope="col">Legitimate Use</th><th>Abuse</th></tr></thead><tbody>'
-            for file_name, file in enumerate(files):
-                if (sections == "permissions"):
-                    for flagged in data[sections][file]:
-                        html+=f'<th scope="col">{flagged["suspicious"]}</th><th scope="col">{flagged["legitimate"]}</th><th scope="col">{flagged["abuse"]}</th></tr>'
-                else:
-                    for flagged in data[sections][file]:
-                        html+=f'<tr><th scope="col">{file}</th><th scope="col">{flagged["suspicious"]}</th><th scope="col">{flagged["legitimate"]}</th><th scope="col">{flagged["abuse"]}</th></tr>'
-            html +='</tbody></table></div></div>'
-        '''
+  
     html +='</div></div>'
-    '''
-    for file, info in enumerate(files):
-        html += f'<tr><td>{file_name}</td><td>{category_name}</td><td>{details}</td><td>{legitimate}</td><td>{abuse}</td></tr>'
-        for item in items:
-            details = item.get("suspicious", "")
-            legitimate = item.get("legitimate", "")
-            abuse = item.get("abuse", "")
-            html += f'<tr><td>{file_name}</td><td>{category_name}</td><td>{details}</td><td>{legitimate}</td><td>{abuse}</td></tr>'
-    '''
+
     html += '</body></html>'
     
-    
+    if (empty):
+        print("Error: No strings found. Please check if path is a decompiled apk and try again.")
 
     with open('flagged_results.html', 'w') as f:
         f.write(html)
@@ -247,8 +232,11 @@ if __name__ == "__main__":
         sys.exit(1)
 
     if args.subcommand == "decompile":
-        if os.path.isfile(args.path) and args.path.split(".")[-1] == "apk":
+        if (not Path(args.output).is_dir()):
+            print("Error: Output folder '"+args.output+"' not found. Please check the folder and try again.")
+        elif os.path.isfile(args.path) and args.path.split(".")[-1] == "apk":
             decompile(args.path, cwd, args.decompile_method, args.output)
+        
         else:
             print("Error: File '"+args.path+"' not found. Please check the filename and try again.")
     else:
@@ -280,95 +268,4 @@ if __name__ == "__main__":
         with open("flagged_files.json", "r") as outfile:
             data = json.load(outfile)
 
-        generate_html_table(output) 
-
-        # adding permissions to android manifest
-        '''
-        if (args.permissions or args.very_verbose or args.intents):
-            table = PrettyTable(["File_name", "Permissions"])
-            for key in data:
-                if data[key][0]:  # Check if there are permissions flagged
-                    table.add_row([key, data[key][0]])
-            with open('permissions_examined.txt', 'w') as f:
-                f.write(table.get_string())
-            print("Saved output as permissions_examined.txt")
-            table.clear()
-
-            for key in data.keys():
-                if ("AndroidManifest.xml" in key):
-                    
-                    print("android")
-                    table.add_column("Permissions", data[key][0])
-                    perms_table = table.get_string()
-                    table.clear()
-
-                    # adding intents to android manifest
-                    table.add_column("Intents", data[key][4])
-
-                    table_data = perms_table + "\n\n" + table.get_string()
-                    with open('Android_manifest_examined.txt', 'w') as f:
-                        f.write(table_data)
-                    table.clear()
-                    data.pop(key)
-                    break
-
-        if (args.urls or args.very_verbose):
-            table = PrettyTable(["File_name", "URLs"])
-            for key in data:
-                if data[key][1]:  # Check if there are URLs flagged
-                    table.add_row([key, data[key][1]])
-            with open('urls_examined.txt', 'w') as f:
-                f.write(table.get_string())
-            print("Saved output as urls_examined.txt")
-            table.clear()
-
-        if (args.apis or args.very_verbose):
-            table = PrettyTable(["File_name", "APIs"])
-            for key in data:
-                if data[key][2]:  # Check if there are APIs flagged
-                    table.add_row([key, data[key][2]])
-            with open('apis_examined.txt', 'w') as f:
-                f.write(table.get_string())
-            print("Saved output as apis_examined.txt")
-            table.clear()
-
-        if (args.apis or args.very_verbose):
-            table = PrettyTable(["File_name", "APIs"])
-            for key in data:
-                if data[key][2]:  # Check if there are APIs flagged
-                    table.add_row([key, data[key][2]])
-            with open('apis_examined.txt', 'w') as f:
-                f.write(table.get_string())
-            print("Saved output as apis_examined.txt")
-            table.clear()
-        
-        if (args.intents or args.very_verbose):
-            table = PrettyTable(["File_name", "Intents"])
-            for key in data:
-                if data[key][4]:  # Check if there are intents flagged
-                    table.add_row([key, data[key][4]])
-            with open('intents_examined.txt', 'w') as f:
-                f.write(table.get_string())
-            print("Saved output as intents_examined.txt")
-            table.clear()
-
-        if (args.logging or args.very_verbose):
-            table = PrettyTable(["File_name", "Logging"])
-            for key in data:
-                if data[key][3]:  # Check if there are logging flagged
-                    table.add_row([key, data[key][3]])
-            with open('logging_examined.txt', 'w') as f:
-                f.write(table.get_string())
-            print("Saved output as logging_examined.txt")
-            table.clear()
-
-        if (args.extras or args.very_verbose):
-            table = PrettyTable(["File_name", "Extras"])
-            for key in data:
-                if data[key][5]:  # Check if there are extras flagged
-                    table.add_row([key, data[key][5]])
-            with open('extras_examined.txt', 'w') as f:
-                f.write(table.get_string())
-            print("Saved output as extras_examined.txt")
-            table.clear()
-    '''
+        generate_html_table(output, args.path.split("/")[0])
