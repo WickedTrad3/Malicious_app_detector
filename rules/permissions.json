@@ -10,8 +10,13 @@
         "abuse": "App may be sending messages unknowingly for phishing or spam"
     },
     {
+        "suspicious": "android.permission.RECEIVE_SMS",
+        "legitimate": "Allows an application to receive incoming SMS messages.",
+        "abuse": "App may be receiving messages for phishing or spamming"
+    },
+    {
         "suspicious": "android.permission.READ_SMS",
-        "legitimate": "Allows an application to read SMS messages.",
+        "legitimate": "Allows an application to read currnt existing SMS messages.",
         "abuse": "App may be reading sensitive messages such as verification codes"
     },
     {
@@ -65,8 +70,63 @@
         "abuse": "App may be reading calendar events which may contain sensitive information"
     },
     {
+        "suspicious": "android.permission.WRITE_CALENDAR",
+        "legitimate": "Allows an application to write the user's calendar data.",
+        "abuse": "App may be writing calendar events for malicious purposes"
+    },
+    {
         "suspicious": "android.permission.CALL_PHONE",
         "legitimate": "Allows an application to initiate a phone call without going through the Dialer user interface for the user to confirm the call.",
         "abuse": "App may be initiating phone calls without user consent"
+    },
+    {
+        "suspicious": "android.permission.SYSTEM_ALERT_WINDOW",
+        "legitimate": "Allows an app to create windows using the type TYPE_APPLICATION_OVERLAY, shown on top of all other apps.",
+        "abuse": "App may be displaying overlay windows to trick users into clicking on malicious content"
+    },
+    {
+        "suspicious": "android.permission.BIND_ACCESSIBILITY_SERVICE",
+        "legitimate": "Required by an AccessibilityService, to allow for interacting with the user and to access UI elements.",
+        "abuse": "App may be using accessibility services to monitor user activity"
+    },
+    {
+        "suspicious": "android.permission.QUERY_ALL_PACKAGES",
+        "legitimate": "Allows an application to query any package installed on the device.",
+        "abuse": "App may be querying installed packages for malicious purposes"
+    },
+    {
+        "suspicious": "android.permission.BLUETOOTH",
+        "legitimate": "Allows applications to connect to paired bluetooth devices.",
+        "abuse": "App may be connecting to bluetooth devices for data exfiltration"
+    },
+    {
+        "suspicious": "android.permission.GET_ACCOUNTS",
+        "legitimate": "Allows access to the list of accounts in the Accounts Service.",
+        "abuse": "App may be accessing accounts for phishing, spamming, or unauthorised access"
+    },
+    {
+        "suspicious": "android.permission.MANAGE_ACCOUNTS",
+        "legitimate": "Allows an application to manage the list of accounts in the AccountManager.",
+        "abuse": "App may be managing accounts for phishing, spamming, or unauthorised access"
+    },
+    {
+        "suspicious": "android.permission.ACCESS_WIFI_STATE",
+        "legitimate": "Allows applications to access information about Wi-Fi networks.",
+        "abuse": "App may be checking if the device is connected to a Wi-Fi network, which can be used to monitor network activity or data exfiltration"
+    },
+    {
+        "suspicious": "android.permission.WRITE_SETTINGS",
+        "legitimate": "Allows an application to read or write the system settings.",
+        "abuse": "App may be changing system settings to disable security features or enable malicious features"
+    },
+    {
+        "suspicious": "android.permission.KILL_BACKGROUND_PROCESSES",
+        "legitimate": "Allows an application to call an ActivityManager method to kill background processes.",
+        "abuse": "App may be killing background processes to disable security features"
+    },
+    {
+        "suspicious": "android.permission.READ_EXTERNAL_STORAGE",
+        "legitimate": "Allows an application to read from external storage.",
+        "abuse": "App may be reading data from external storage for data theft or manipulation"
     }
 ]

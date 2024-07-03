@@ -36,12 +36,6 @@
         "abuse": "App may be sending data to a server"
     },
     {
-        "suspicious": "HttpPost",
-        "legitimate": "Indicates usage of HttpPost.",
-        "category": "Network Communication",
-        "abuse": "App may be using it for sending data to a server"
-    },
-    {
         "suspicious": "sendTextMessage",
         "legitimate": "Sends SMS messages.",
         "category": "Communication",

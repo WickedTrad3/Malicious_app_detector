@@ -107,6 +107,86 @@ def decompile(directory, cwd, method, outputpath):
     except:
         print("Error: Output folder '"+args.output+"' cannot be written into. Please check the folder and try again.")
 
+def get_flagged_apis(data):
+    flagged_apis = set()
+    for category, files in data["code_apis"].items():
+        for file, details in files.items():
+            for detail in details:
+                match = re.search(r'(\b[a-zA-Z_][a-zA-Z0-9_]*\b)', detail["suspicious"])
+                if match:
+                    api_name = match.group(1)
+                    flagged_apis.add(api_name)
+    return flagged_apis
+
+def generate_api_permission_table(flagged_apis):
+    api_permission_mapping = {
+        "COMMAND_SEND_SMS": ["android.permission.SEND_SMS"],
+        "getIMEI": ["android.permission.READ_PHONE_STATE"],
+        "httpclient1": ["android.permission.INTERNET"],
+        "httpclient": ["android.permission.INTERNET"],
+        "HttpPost": ["android.permission.INTERNET"],
+        "UrlEncodedFormEntity": ["android.permission.INTERNET"],
+        "sendTextMessage": ["android.permission.SEND_SMS"],
+        "sendMultipartTextMessage": ["android.permission.SEND_SMS"],
+        "sendDataMessage": ["android.permission.SEND_SMS"],
+        "Camera": ["android.permission.CAMERA"],
+        "Calendar": ["android.permission.READ_CALENDAR", "android.permission.WRITE_CALENDAR"],
+        "sms": ["android.permission.SEND_SMS", "android.permission.RECEIVE_SMS", "android.permission.READ_SMS"],
+        "Landroid/telephony/SmsManager": ["android.permission.SEND_SMS"],
+        "click": ["android.permission.SYSTEM_ALERT_WINDOW"],
+        "accessibility": ["android.permission.BIND_ACCESSIBILITY_SERVICE"],
+        "getLine1Number": ["android.permission.READ_PHONE_STATE"],
+        "getDeviceId": ["android.permission.READ_PHONE_STATE"],
+        "HttpURLConnection": ["android.permission.INTERNET"],
+        "Context.openFileOutput": ["android.permission.WRITE_EXTERNAL_STORAGE"],
+        "getInstalledPackages": ["android.permission.QUERY_ALL_PACKAGES"],
+        "requestLocationUpdates": ["android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"],
+        "MediaRecorder": ["android.permission.RECORD_AUDIO"],
+        "BluetoothAdapter": ["android.permission.BLUETOOTH"],
+        "BluetoothDevice": ["android.permission.BLUETOOTH"],
+        "AccountManager": ["android.permission.GET_ACCOUNTS", "android.permission.MANAGE_ACCOUNTS"],
+        "Landroid/net/ConnectivityManager;->getActiveNetworkInfo": ["android.permission.ACCESS_NETWORK_STATE"],
+        "Landroid/net/wifi/WifiManager;->getConnectionInfo": ["android.permission.ACCESS_WIFI_STATE"],
+        "Ljava/net/HttpURLConnection;->connect": ["android.permission.INTERNET"],
+        "Ljava/net/URL;->openStream": ["android.permission.INTERNET"],
+        "Ljava/net/Socket;->connect": ["android.permission.INTERNET"],
+        "Lorg/apache/http/client/methods/HttpPost;-><init>(Ljava/lang/String;)V": ["android.permission.INTERNET"],
+        "Lorg/apache/http/impl/client/DefaultHttpClient;->execute": ["android.permission.INTERNET"],
+        "Landroid/net/URL;->openConnection": ["android.permission.INTERNET"],
+        "Landroid/os/Build;->SERIAL": ["android.permission.READ_PHONE_STATE"],
+        "Landroid/provider/Settings$Secure;->getString": ["android.permission.WRITE_SETTINGS"],
+        "Landroid/accounts/AccountManager;->getAccounts": ["android.permission.GET_ACCOUNTS"],
+        "Landroid/telephony/TelephonyManager;->getSubscriberId": ["android.permission.READ_PHONE_STATE"],
+        "Landroid/telephony/TelephonyManager;->getSimSerialNumber": ["android.permission.READ_PHONE_STATE"],
+        "Landroid/os/Process;->killProcess": ["android.permission.KILL_BACKGROUND_PROCESSES"],
+        "Ljava/io/File;->listFiles": ["android.permission.READ_EXTERNAL_STORAGE"],
+        "Ljava/io/FileReader;->read": ["android.permission.READ_EXTERNAL_STORAGE"],
+        "Ljava/io/FileOutputStream;->write": ["android.permission.WRITE_EXTERNAL_STORAGE"],
+        "Ljava/io/FileInputStream;->read": ["android.permission.READ_EXTERNAL_STORAGE"],
+        "Ljava/io/File;->delete": ["android.permission.WRITE_EXTERNAL_STORAGE"],
+        "Landroid/os/Environment;->getExternalStorageDirectory": ["android.permission.WRITE_EXTERNAL_STORAGE"],
+        "Landroid/location/LocationManager;->getLastKnownLocation": ["android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"],
+        "Landroid/location/LocationListener;->onLocationChanged": ["android.permission.ACCESS_FINE_LOCATION", "android.permission.ACCESS_COARSE_LOCATION"],
+        "Landroid/media/AudioRecord;->startRecording": ["android.permission.RECORD_AUDIO"],
+        "Landroid/hardware/Camera;->takePicture": ["android.permission.CAMERA"],
+        "Landroid/accessibilityservice/AccessibilityService": ["android.permission.BIND_ACCESSIBILITY_SERVICE"],
+        "Landroid/accessibilityservice/AccessibilityServiceInfo": ["android.permission.BIND_ACCESSIBILITY_SERVICE"],
+        "Landroid/view/accessibility/AccessibilityEvent": ["android.permission.BIND_ACCESSIBILITY_SERVICE"],
+        "Landroid/view/accessibility/AccessibilityNodeInfo": ["android.permission.BIND_ACCESSIBILITY_SERVICE"],
+        "Landroid/provider/Settings$Secure;->putString": ["android.permission.WRITE_SETTINGS"],
+    }
+
+    html = '<h2>API to Permission Mapping</h2>'
+    html += '<table class="table table-dark table-striped"><tr><th>API</th><th>Permissions Required</th></tr>'
+    
+    for api, permissions in api_permission_mapping.items():
+        if api in flagged_apis:
+            html += f'<tr><td>{api}</td><td>{", ".join(permissions)}</td></tr>'
+    
+    html += '</table>'
+    
+    return html
+
 def generate_html_table(data, directory, identifier):
     count = 0
     try:
@@ -185,6 +265,17 @@ def generate_html_table(data, directory, identifier):
         html += '\t\t\t\t</div>\n'
         html += '\t</div>\n'
 
+    flagged_apis = get_flagged_apis(data)
+    html += '\t<div class="accordion-item">\n'
+    html += '\t\t<h2 class="accordion-header" id="headingAPIMapping">\n'
+    html += '\t\t\t<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAPIMapping" aria-expanded="false" aria-controls="collapseAPIMapping">API to Permission Mapping</button></h2>\n'
+    html += '\t\t\t<div id="collapseAPIMapping" class="accordion-collapse collapse" aria-labelledby="headingAPIMapping" data-bs-parent="#accordionPanel">\n'
+    html += '\t\t\t\t<div class="accordion-body">\n'
+    html += generate_api_permission_table(flagged_apis)
+    html += '\t\t\t\t</div>\n'
+    html += '\t\t\t</div>\n'
+    html += '\t</div>\n'
+
     html += '</div></div>'
 
     html += '</body></html>'
@@ -196,7 +287,8 @@ def generate_html_table(data, directory, identifier):
     with open(output_filename, "w+") as f:
         f.write(html)
     print(f"Saved output as {output_filename}")
-    
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="malwh", description="APK Analysis CLI Tool")
     
