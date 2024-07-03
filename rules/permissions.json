@@ -1,0 +1,72 @@
+[
+    {
+        "suspicious": "android.permission.READ_PHONE_STATE",
+        "legitimate": "Allows read-only access to phone state, including the current cellular network information, the status of any ongoing calls, and a list of any PhoneAccounts registered on the device.",
+        "abuse": "App may be using it to track device location, monitor calls, and gather other sensitive information"
+    },
+    {
+        "suspicious": "android.permission.SEND_SMS",
+        "legitimate": "Allows an application to send SMS messages.",
+        "abuse": "App may be sending messages unknowingly for phishing or spam"
+    },
+    {
+        "suspicious": "android.permission.READ_SMS",
+        "legitimate": "Allows an application to read SMS messages.",
+        "abuse": "App may be reading sensitive messages such as verification codes"
+    },
+    {
+        "suspicious": "android.permission.WRITE_SMS",
+        "legitimate": "(Obsolete, removed in API level 23) Allows an application to write SMS messages.",
+        "abuse": "App may be sending messages unknowingly for phishing or spam"
+    },
+    {
+        "suspicious": "android.permission.RECORD_AUDIO",
+        "legitimate": "Allows an application to record audio.",
+        "abuse": "App may be recording audio without user consent"
+    },
+    {
+        "suspicious": "android.permission.ACCESS_NETWORK_STATE",
+        "legitimate": "Allows applications to access information about networks.",
+        "abuse": "App may be checking if the device is connected to a network, which can be used to monitor network activity or data exfiltration"
+    },
+    {
+        "suspicious": "android.permission.INTERNET",
+        "legitimate": "Allows applications to open network sockets.",
+        "abuse": "App may be communicating with a remote server"
+    },
+    {
+        "suspicious": "android.permission.RECEIVE_BOOT_COMPLETED",
+        "legitimate": "Allows an application to receive the Intent.ACTION_BOOT_COMPLETED that is broadcast after the system finishes booting.",
+        "abuse": "App may launch itself after the device boots to ensure persistence"
+    },
+    {
+        "suspicious": "android.permission.ACCESS_FINE_LOCATION",
+        "legitimate": "Allows an app to access precise location.",
+        "abuse": "App may be tracking the user's location"
+    },
+    {
+        "suspicious": "android.permission.READ_CONTACTS",
+        "legitimate": "Allows an application to read the user's contacts data.",
+        "abuse": "App may be reading contacts for phishing or spamming"
+    },
+    {
+        "suspicious": "android.permission.WRITE_EXTERNAL_STORAGE",
+        "legitimate": "Allows an application to write to external storage.",
+        "abuse": "App may be writing data to external storage for data theft or manipulation"
+    },
+    {
+        "suspicious": "android.permission.CAMERA",
+        "legitimate": "Required to be able to access the camera device.",
+        "abuse": "App may be taking pictures or recording videos without user consent"
+    },
+    {
+        "suspicious": "android.permission.READ_CALENDAR",
+        "legitimate": "Allows an application to read the user's calendar data.",
+        "abuse": "App may be reading calendar events which may contain sensitive information"
+    },
+    {
+        "suspicious": "android.permission.CALL_PHONE",
+        "legitimate": "Allows an application to initiate a phone call without going through the Dialer user interface for the user to confirm the call.",
+        "abuse": "App may be initiating phone calls without user consent"
+    }
+]

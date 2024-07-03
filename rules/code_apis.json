@@ -1,0 +1,506 @@
+[
+    {
+        "suspicious": "COMMAND_SEND_SMS",
+        "legitimate": "Used to send SMS messages.",
+        "category": "Communication",
+        "abuse": "App may be sending SMS messages"
+    },
+    {
+        "suspicious": "getIMEI",
+        "legitimate": "Retrieves the device's IMEI.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be using it for tracking or identifying the device"
+    },
+    {
+        "suspicious": "httpclient1",
+        "legitimate": "HTTP client usage.",
+        "category": "Network Communication",
+        "abuse": "App may be using it for communicating with remote servers"
+    },
+    {
+        "suspicious": "httpclient",
+        "legitimate": "HTTP client usage.",
+        "category": "Network Communication",
+        "abuse": "App may be using it for communicating with remote servers"
+    },
+    {
+        "suspicious": "HttpPost",
+        "legitimate": "Used for sending data via HTTP POST method.",
+        "category": "Network Communication",
+        "abuse": "App may be sending data to a server, potentially for exfiltration of sensitive information"
+    },
+    {
+        "suspicious": "UrlEncodedFormEntity",
+        "legitimate": "Used in HTTP requests for sending data.",
+        "category": "Network Communication",
+        "abuse": "App may be sending data to a server"
+    },
+    {
+        "suspicious": "HttpPost",
+        "legitimate": "Indicates usage of HttpPost.",
+        "category": "Network Communication",
+        "abuse": "App may be using it for sending data to a server"
+    },
+    {
+        "suspicious": "sendTextMessage",
+        "legitimate": "Sends SMS messages.",
+        "category": "Communication",
+        "abuse": "App may be sending SMS messages unknowingly to user"
+    },
+    {
+        "suspicious": "sendMultipartTextMessage",
+        "legitimate": "Sends SMS messages.",
+        "category": "Communication",
+        "abuse": "App may be sending SMS messages unknowingly to user"
+    },
+    {
+        "suspicious": "sendDataMessage",
+        "legitimate": "Sends SMS messages.",
+        "category": "Communication",
+        "abuse": "App may be sending SMS messages unknowingly to user"
+    },
+    {
+        "suspicious": "Cipher",
+        "legitimate": "Used for cryptographic operations.",
+        "category": "Cryptography",
+        "abuse": "App may be encrypting data, possibly for exfiltration or locking user device"
+    },
+    {
+        "suspicious": "Landroid/content/ContentResolver;->query",
+        "legitimate": "Queries data from content providers.",
+        "category": "Content Providers and Databases",
+        "abuse": "App may be querying data for theft"
+    },
+    {
+        "suspicious": "Camera",
+        "legitimate": "Opens the camera device.",
+        "category": "Audio and Video",
+        "abuse": "App may be taking pictures or recording videos without user consent"
+    },
+    {
+        "suspicious": "invoke-virtual \\{.*\\}, Ljava/lang/reflect/Method;->invoke",
+        "legitimate": "Indicates use of reflection.",
+        "category": "System and Reflection",
+        "abuse": "App may be using reflection to dynamically invoke code, possibly for obfuscation"
+    },
+    {
+        "suspicious": "requestWindowFeature",
+        "legitimate": "Requests a window feature.",
+        "category": "User Interface",
+        "abuse": "App may be mimicking system UI for phishing or capturing user input"
+    },
+    {
+        "suspicious": "PackageManager",
+        "legitimate": "Provides access to package information.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be stealing information about installed apps"
+    },
+    {
+        "suspicious": "Calendar",
+        "legitimate": "Accesses calendar data.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be accessing calendar events for sensitive information"
+    },
+    {
+        "suspicious": "System",
+        "legitimate": "General system usage.",
+        "category": "Device Information and System Interaction",
+        "abuse": "May be used to execute system commands, potentially for privilege escalation or persistence"
+    },
+    {
+        "suspicious": "sms",
+        "legitimate": "Indicates SMS functionality.",
+        "category": "Communication",
+        "abuse": "General indication of SMS functions"
+    },
+    {
+        "suspicious": "Landroid/telephony/SmsManager",
+        "legitimate": "Indicates SMS functionality.",
+        "category": "Communication",
+        "abuse": "General indication of SMS functions"
+    },
+    {
+        "suspicious": "click",
+        "legitimate": "Indicates click functionality.",
+        "category": "User Interface",
+        "abuse": "General indication of clickjacking or simulating user clicks"
+    },
+    {
+        "suspicious": "accessibility",
+        "legitimate": "Indicates accessibility functionality.",
+        "category": "Accessibility and System Settings",
+        "abuse": "May be used to intercept or manipulate user input, leading to unauthorized actions"
+    },
+    {
+        "suspicious": "Android",
+        "legitimate": "General Android usage.",
+        "category": "Device Information and System Interaction",
+        "abuse": "General Android flag"
+    },
+    {
+        "suspicious": "getLine1Number",
+        "legitimate": "Retrieves the phone number of the device.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be using it for tracking or identifying the device"
+    },
+    {
+        "suspicious": "getDeviceId",
+        "legitimate": "Retrieves the device's IMEI.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be using it for tracking or identifying the device"
+    },
+    {
+        "suspicious": "HttpURLConnection",
+        "legitimate": "HTTP client usage.",
+        "category": "Network Communication",
+        "abuse": "App may be using it for communicating with remote servers"
+    },
+    {
+        "suspicious": "Context.openFileOutput",
+        "legitimate": "Opens a file for writing.",
+        "category": "File and Data Handling",
+        "abuse": "App may be writing data to a file to be exfiltrated"
+    },
+    {
+        "suspicious": "getInstalledPackages",
+        "legitimate": "Retrieves information about installed packages.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be stealing information about installed apps to be targeted for exploitation"
+    },
+    {
+        "suspicious": "MessageDigest",
+        "legitimate": "Used for cryptographic operations.",
+        "category": "Cryptography",
+        "abuse": "May be used to verify the integrity of malicious payloads."
+    },
+    {
+        "suspicious": "requestLocationUpdates",
+        "legitimate": "Requests location updates.",
+        "category": "Location",
+        "abuse": "App may be tracking the device's location"
+    },
+    {
+        "suspicious": "MediaRecorder",
+        "legitimate": "Records audio and video.",
+        "category": "Audio and Video",
+        "abuse": "App may be recording audio or video without user consent"
+    },
+    {
+        "suspicious": "ClassLoader",
+        "legitimate": "Used for dynamic class loading.",
+        "category": "System and Reflection",
+        "abuse": "App may be loading classes dynamically for obfuscation"
+    },
+    {
+        "suspicious": "android.os.Build",
+        "legitimate": "Provides information about the device.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be using it for tracking or identifying the device"
+    },
+    {
+        "suspicious": "SystemProperties.get()",
+        "legitimate": "Retrieves system properties.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be using it for tracking or identifying the device"
+    },
+    {
+        "suspicious": "BluetoothAdapter",
+        "legitimate": "Manages Bluetooth functionality.",
+        "category": "Bluetooth",
+        "abuse": "App may be connecting to unauthorised devices or used for tracking"
+    },
+    {
+        "suspicious": "BluetoothDevice",
+        "legitimate": "Manages Bluetooth devices.",
+        "category": "Bluetooth",
+        "abuse": "App may be connecting to unauthorised devices or used for tracking"
+    },
+    {
+        "suspicious": "AccountManager",
+        "legitimate": "Manages user accounts.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be stealing account information"
+    },
+    {
+        "suspicious": "Landroid/net/ConnectivityManager;->getActiveNetworkInfo",
+        "legitimate": "Retrieves active network information.",
+        "category": "Network Communication",
+        "abuse": "App may be checking for network connectivity for data exfiltration."
+    },
+    {
+        "suspicious": "Landroid/net/wifi/WifiManager;->getConnectionInfo",
+        "legitimate": "Retrieves WiFi connection information.",
+        "category": "Network Communication",
+        "abuse": "App may be collecting network connection details for tracking or exfiltration."
+    },
+    {
+        "suspicious": "Landroid/net/Uri;->parse",
+        "legitimate": "Parses a URI string.",
+        "category": "Network Communication",
+        "abuse": "App may be manipulating URIs for malicious network requests."
+    },
+    {
+        "suspicious": "Ljava/net/HttpURLConnection;->connect",
+        "legitimate": "Establishes an HTTP connection.",
+        "category": "Network Communication",
+        "abuse": "App may be connecting to malicious servers."
+    },
+    {
+        "suspicious": "Ljava/net/URL;->openStream",
+        "legitimate": "Opens a stream to a URL.",
+        "category": "Network Communication",
+        "abuse": "App may be streaming data to/from a malicious source."
+    },
+    {
+        "suspicious": "Ljava/net/Socket;->connect",
+        "legitimate": "Connects a socket.",
+        "category": "Network Communication",
+        "abuse": "App may be establishing a connection for unauthorized communication."
+    },
+    {
+        "suspicious": "Lorg/apache/http/client/methods/HttpPost;-><init>(Ljava/lang/String;)V",
+        "legitimate": "Initializes an HTTP POST request.",
+        "category": "Network Communication",
+        "abuse": "App may be sending data to a remote server."
+    },
+    {
+        "suspicious": "Lorg/apache/http/impl/client/DefaultHttpClient;->execute",
+        "legitimate": "Executes an HTTP request.",
+        "category": "Network Communication",
+        "abuse": "App may be executing malicious HTTP requests."
+    },
+    {
+        "suspicious": "Landroid/net/URL;->openConnection",
+        "legitimate": "Opens a connection to a URL.",
+        "category": "Network Communication",
+        "abuse": "App may be opening connections to unauthorized servers."
+    },
+    {
+        "suspicious": "Landroid/os/Build;->MODEL",
+        "legitimate": "Retrieves device model.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be identifying the device for tracking."
+    },
+    {
+        "suspicious": "Landroid/os/Build;->DEVICE",
+        "legitimate": "Retrieves device name.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be identifying the device for tracking."
+    },
+    {
+        "suspicious": "Landroid/os/Build;->MANUFACTURER",
+        "legitimate": "Retrieves device manufacturer.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be identifying the device for tracking."
+    },
+    {
+        "suspicious": "Landroid/os/Build;->SERIAL",
+        "legitimate": "Retrieves device serial number.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be identifying the device for tracking."
+    },
+    {
+        "suspicious": "Landroid/provider/Settings$Secure;->getString",
+        "legitimate": "Retrieves secure settings.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be accessing secure settings for malicious purposes."
+    },
+    {
+        "suspicious": "Landroid/accounts/AccountManager;->getAccounts",
+        "legitimate": "Retrieves user accounts.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be accessing user accounts for data theft."
+    },
+    {
+        "suspicious": "Landroid/telephony/TelephonyManager;->getSubscriberId",
+        "legitimate": "Retrieves subscriber ID.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be identifying the subscriber for tracking."
+    },
+    {
+        "suspicious": "Landroid/telephony/TelephonyManager;->getSimSerialNumber",
+        "legitimate": "Retrieves SIM serial number.",
+        "category": "Device Information and System Interaction",
+        "abuse": "App may be identifying the SIM for tracking."
+    },
+    {
+        "suspicious": "Ljava/lang/reflect/Field;->setAccessible",
+        "legitimate": "Sets field accessibility.",
+        "category": "System and Reflection",
+        "abuse": "App may be accessing private fields for malicious purposes."
+    },
+    {
+        "suspicious": "Ljava/lang/Runtime;->exec",
+        "legitimate": "Executes a command.",
+        "category": "System and Reflection",
+        "abuse": "App may be executing malicious commands."
+    },
+    {
+        "suspicious": "Ldalvik/system/DexClassLoader;->loadClass",
+        "legitimate": "Loads a class from a DEX file.",
+        "category": "System and Reflection",
+        "abuse": "App may be loading malicious code."
+    },
+    {
+        "suspicious": "Ldalvik/system/PathClassLoader;->findClass",
+        "legitimate": "Finds a class in a path.",
+        "category": "System and Reflection",
+        "abuse": "App may be finding and loading malicious classes."
+    },
+    {
+        "suspicious": "Landroid/os/Process;->killProcess",
+        "legitimate": "Kills a process.",
+        "category": "System and Reflection",
+        "abuse": "App may be killing processes for malicious purposes."
+    },
+    {
+        "suspicious": "Ljavax/crypto/Cipher;->getInstance",
+        "legitimate": "Gets a cryptographic cipher instance.",
+        "category": "Cryptography",
+        "abuse": "App may be encrypting data for malicious purposes."
+    },
+    {
+        "suspicious": "Ljavax/crypto/Cipher;->doFinal",
+        "legitimate": "Completes a cryptographic operation.",
+        "category": "Cryptography",
+        "abuse": "App may be completing encryption for malicious purposes."
+    },
+    {
+        "suspicious": "Ljava/security/KeyFactory;->generatePrivate",
+        "legitimate": "Generates a private key.",
+        "category": "Cryptography",
+        "abuse": "App may be generating keys for malicious encryption."
+    },
+    {
+        "suspicious": "Ljava/security/KeyFactory;->generatePublic",
+        "legitimate": "Generates a public key.",
+        "category": "Cryptography",
+        "abuse": "App may be generating keys for malicious encryption."
+    },
+    {
+        "suspicious": "Ljavax/crypto/spec/SecretKeySpec",
+        "legitimate": "Specifies a secret key.",
+        "category": "Cryptography",
+        "abuse": "App may be specifying keys for malicious encryption."
+    },
+    {
+        "suspicious": "Ljava/security/spec/PBEKeySpec",
+        "legitimate": "Specifies a password-based encryption key.",
+        "category": "Cryptography",
+        "abuse": "App may be specifying keys for malicious encryption."
+    },
+    {
+        "suspicious": "Ljava/io/File;->listFiles",
+        "legitimate": "Lists files in a directory.",
+        "category": "File and Data Handling",
+        "abuse": "App may be accessing files for malicious purposes."
+    },
+    {
+        "suspicious": "Ljava/io/FileReader;->read",
+        "legitimate": "Reads a file.",
+        "category": "File and Data Handling",
+        "abuse": "App may be reading files for malicious purposes."
+    },
+    {
+        "suspicious": "Ljava/io/FileOutputStream;->write",
+        "legitimate": "Writes to a file.",
+        "category": "File and Data Handling",
+        "abuse": "App may be writing malicious data to files."
+    },
+    {
+        "suspicious": "Ljava/io/FileInputStream;->read",
+        "legitimate": "Reads from a file.",
+        "category": "File and Data Handling",
+        "abuse": "App may be reading files for malicious purposes."
+    },
+    {
+        "suspicious": "Ljava/io/File;->delete",
+        "legitimate": "Deletes a file.",
+        "category": "File and Data Handling",
+        "abuse": "App may be deleting files for malicious purposes."
+    },
+    {
+        "suspicious": "Landroid/os/Environment;->getExternalStorageDirectory",
+        "legitimate": "Gets the external storage directory.",
+        "category": "File and Data Handling",
+        "abuse": "App may be accessing external storage for malicious purposes."
+    },
+    {
+        "suspicious": "Landroid/location/LocationManager;->getLastKnownLocation",
+        "legitimate": "Gets the last known location.",
+        "category": "Location",
+        "abuse": "App may be tracking the device's location."
+    },
+    {
+        "suspicious": "Landroid/location/LocationListener;->onLocationChanged",
+        "legitimate": "Listens for location changes.",
+        "category": "Location",
+        "abuse": "App may be tracking the device's location."
+    },
+    {
+        "suspicious": "Landroid/media/AudioRecord;->startRecording",
+        "legitimate": "Starts audio recording.",
+        "category": "Audio and Video",
+        "abuse": "App may be recording audio without consent."
+    },
+    {
+        "suspicious": "Landroid/hardware/Camera;->takePicture",
+        "legitimate": "Takes a picture.",
+        "category": "Audio and Video",
+        "abuse": "App may be taking pictures without consent."
+    },
+    {
+        "suspicious": "Landroid/accessibilityservice/AccessibilityService",
+        "legitimate": "Provides accessibility services.",
+        "category": "Accessibility and System Settings",
+        "abuse": "App may be using accessibility services for malicious purposes."
+    },
+    {
+        "suspicious": "Landroid/accessibilityservice/AccessibilityServiceInfo",
+        "legitimate": "Provides accessibility service information.",
+        "category": "Accessibility and System Settings",
+        "abuse": "App may be using accessibility services for malicious purposes."
+    },
+    {
+        "suspicious": "Landroid/view/accessibility/AccessibilityEvent",
+        "legitimate": "Handles accessibility events.",
+        "category": "Accessibility and System Settings",
+        "abuse": "App may be using accessibility events for malicious purposes."
+    },
+    {
+        "suspicious": "Landroid/view/accessibility/AccessibilityNodeInfo",
+        "legitimate": "Provides node information for accessibility.",
+        "category": "Accessibility and System Settings",
+        "abuse": "App may be using node information for malicious purposes."
+    },
+    {
+        "suspicious": "Landroid/provider/Settings$Secure;->putString",
+        "legitimate": "Updates secure settings.",
+        "category": "Accessibility and System Settings",
+        "abuse": "App may be modifying secure settings for malicious purposes."
+    },
+    {
+        "suspicious": "Landroid/database/sqlite/SQLiteDatabase;->query",
+        "legitimate": "Queries a SQLite database.",
+        "category": "Content Providers and Databases",
+        "abuse": "App may be querying databases for data theft."
+    },
+    {
+        "suspicious": "Landroid/database/sqlite/SQLiteDatabase;->insert",
+        "legitimate": "Inserts data into a SQLite database.",
+        "category": "Content Providers and Databases",
+        "abuse": "App may be inserting data into databases for malicious purposes."
+    },
+    {
+        "suspicious": "Landroid/database/sqlite/SQLiteDatabase;->delete",
+        "legitimate": "Deletes data from a SQLite database.",
+        "category": "Content Providers and Databases",
+        "abuse": "App may be deleting data from databases for malicious purposes."
+    },
+    {
+        "suspicious": "Landroid/database/sqlite/SQLiteDatabase;->update",
+        "legitimate": "Updates data in a SQLite database.",
+        "category": "Content Providers and Databases",
+        "abuse": "App may be updating databases for malicious purposes."
+    }
+]
