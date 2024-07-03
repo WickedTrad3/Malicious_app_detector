@@ -2,7 +2,7 @@
     {
         "suspicious": "COMMAND_SEND_SMS",
         "legitimate": "Used to send SMS messages.",
-        "category": "Communication",
+        "category": "Messages",
         "abuse": "App may be sending SMS messages"
     },
     {
@@ -44,19 +44,19 @@
     {
         "suspicious": "sendTextMessage",
         "legitimate": "Sends SMS messages.",
-        "category": "Communication",
+        "category": "Messages",
         "abuse": "App may be sending SMS messages unknowingly to user"
     },
     {
         "suspicious": "sendMultipartTextMessage",
         "legitimate": "Sends SMS messages.",
-        "category": "Communication",
+        "category": "Messages",
         "abuse": "App may be sending SMS messages unknowingly to user"
     },
     {
         "suspicious": "sendDataMessage",
         "legitimate": "Sends SMS messages.",
-        "category": "Communication",
+        "category": "Messages",
         "abuse": "App may be sending SMS messages unknowingly to user"
     },
     {
@@ -110,13 +110,13 @@
     {
         "suspicious": "sms",
         "legitimate": "Indicates SMS functionality.",
-        "category": "Communication",
+        "category": "Messages",
         "abuse": "General indication of SMS functions"
     },
     {
         "suspicious": "Landroid/telephony/SmsManager",
         "legitimate": "Indicates SMS functionality.",
-        "category": "Communication",
+        "category": "Messages",
         "abuse": "General indication of SMS functions"
     },
     {
