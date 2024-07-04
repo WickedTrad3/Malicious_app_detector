@@ -13,6 +13,7 @@ import itertools
 import hashlib
 import re
 import base64
+import html
 
 def check_folders(directory, cwd, options):
     first_iteration = True
@@ -106,8 +107,13 @@ def decompile(directory, cwd, method, outputpath):
             "MD5": digest.hexdigest(),
             "package name": package_name
         }
-        with open(outputpath+"/file_stat.json", 'w') as outfile:
-            json.dump(stat, outfile, indent=1)
+        if (method == "java"):
+        #change to include apktool_decompiled/jadx_decompiled folder
+            with open(outputpath+"/jadx_decompiled/file_stat.json", 'w') as outfile:
+                json.dump(stat, outfile, indent=1)
+        else:
+            with open(outputpath+"/apktool_decompiled/file_stat.json", 'w') as outfile:
+                json.dump(stat, outfile, indent=1)
         print(f"Decompilation of {directory} complete. File metadata is stored inside flagged_items")
     except:
         print("Error: Output folder '" + outputpath + "' cannot be written into. Please check the folder and try again.")
@@ -125,23 +131,23 @@ def generate_html_table(data, icons,directory):
             "package name": None
         }
     empty = True
-    html = '<html><head><title>Flagged Results</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous"><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script></head>'
-    html += '<style>.accordion {--bs-accordion-btn-color: white;--bs-accordion-btn-bg:  #2a2a2a;--bs-accordion-active-color: pink;--bs-accordion-active-bg:  #2a2a2a;}.accordion-button:after {background: #2a2a2a}.accordion-button:not(.collapsed)::after {background: #2a2a2a}</style>'
-    html += '<body style="background-color:#121212;color: #b9b9b9;">'
-    html += '\n<div class="container-fluid border border-white rounded mt-2">'
+    html_report = '<html><head><title>Flagged Results</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous"><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script></head>'
+    html_report += '<style>.accordion {--bs-accordion-btn-color: white;--bs-accordion-btn-bg:  #2a2a2a;--bs-accordion-active-color: pink;--bs-accordion-active-bg:  #2a2a2a;}.accordion-button:after {background: #2a2a2a}.accordion-button:not(.collapsed)::after {background: #2a2a2a}</style>'
+    html_report += '<body style="background-color:#121212;color: #b9b9b9;">'
+    html_report += '\n<div class="container-fluid border border border-white rounded mt-2">'
 
-    html+= '<div class="row"><div class="col"><p>Malwhere</p></div><div class="col">'
-    html += f'<div class="row"><div class="col"><p>Package name:</p></div><div class="col"><p>{content["package name"]}</p></div></div>'
+    html_report+= '<div class="row"><div class="col"><p>Malwhere</p></div><div class="col">'
+    html_report += f'<div class="row"><div class="col"><p>Package name:</p></div><div class="col"><p>{content["package name"]}</p></div></div>'
     
-    html += '<div class="row">'
-    html += f'<div class="col"><p>File size:</p></div><div class="col"><p>{content["file_size"]}MB</p></div></div>'
+    html_report += '<div class="row">'
+    html_report += f'<div class="col"><p>File size:</p></div><div class="col"><p>{content["file_size"]}MB</p></div></div>'
     
-    html += '<div class="row">'
-    html += f'<div class="col"><p>MD5:</p></div><div class="col"><p>{content["MD5"]}</p></div></div></div></div></div>'
+    html_report += '<div class="row">'
+    html_report += f'<div class="col"><p>MD5:</p></div><div class="col"><p>{content["MD5"]}</p></div></div></div></div></div>'
 
 
-    html += '\n<h1 class="text-center">Categories</h1>\n'
-    html += '\n<div class="accordion container-fluid" id="accordionPanel">\n'
+    html_report += '\n<h1 class="text-center">Categories</h1>\n'
+    html_report += '\n<div class="accordion container-fluid" id="accordionPanel">\n'
 
 
 
@@ -149,70 +155,76 @@ def generate_html_table(data, icons,directory):
     #data_base64 = base64.b64encode(image)  # encode to base64 (bytes)
     #data_base64 = data_base64.decode()
     for section, files in data.items():
-        html += '\t<div class="accordion-item">\n'
-        html += f'\t\t<h2 class="accordion-header d-flex" id="heading{section.replace(" ", "")}">\n'
-        html += f'\t\t\t<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{section}" aria-expanded="false" aria-controls="collapse{section}">{icons[section]}{section.capitalize()}</button></h2>\n'
-        html += f'\t\t\t\t<div id="collapse{section}" class="accordion-collapse collapse" aria-labelledby="heading{section.replace(" ", "")}" data-bs-parent="#accordionPanel">\n'
-        html += f'\t\t\t\t\t<div class="accordion-body bg-dark" style="word-break: break-all;">\n'
+        html_report += '\t<div class="accordion-item">\n'
+        html_report += f'\t\t<h2 class="accordion-header d-flex" id="heading{section.replace(" ", "")}">\n'
+        html_report += f'\t\t\t<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{section}" aria-expanded="false" aria-controls="collapse{section}">{icons[section]}{' '.join(word[0].upper() + word[1:] for word in section.split())}</button></h2>\n'
+        html_report += f'\t\t\t\t<div id="collapse{section}" class="accordion-collapse collapse" aria-labelledby="heading{section.replace(" ", "")}" data-bs-parent="#accordionPanel">\n'
+        html_report += f'\t\t\t\t\t<div class="accordion-body bg-dark" style="word-break: break-all;">\n'
 
         if (section == "code_apis"):
-            html += f'\t\t\t\t\t\t<div class="accordion" id="sub-accordion{section.replace(" ", "")}">\n'
+            html_report += f'\t\t\t\t\t\t<div class="accordion" id="sub-accordion{section.replace(" ", "")}">\n'
 
             for sub_section, files in data[section].items():
                 if (len(files)==0):
                     empty = True
                 else:
                     empty = False
-                html += '\t\t\t\t\t\t\t<div class="accordion-item">\n'
-                html += f'\t\t\t\t\t\t\t<h2 class="accordion-header" id="sub-heading{sub_section.replace(" ", "")}">\n'
-                html += f'\t\t\t\t\t\t\t<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#sub-collapse{sub_section.replace(" ", "")}" aria-expanded="false" aria-controls="collapse{sub_section.replace(" ", "")}">{icons[sub_section]}{sub_section.capitalize()}</h2>\n'
-                html += f'\t\t\t\t\t\t\t\t<div id="sub-collapse{sub_section.replace(" ", "")}" class="accordion-collapse collapse" aria-labelledby="sub-heading{sub_section.replace(" ", "")}" data-bs-parent="#sub-accordion{section.replace(" ", "")}">\n'
-                html += '\t\t\t\t\t\t\t\t\t<div class="accordion-body bg-dark">\n'
-                html += '\t\t\t\t\t\t\t\t\t<table class="table table-dark table-bordered"><tr><th>File Name</th><th>Details</th><th>Legitimate Use</th><th>Abuse</th></tr>\n'
-                for file_name, list_details in files.items():
+                html_report += '\t\t\t\t\t\t\t<div class="accordion-item">\n'
+                html_report += f'\t\t\t\t\t\t\t<h2 class="accordion-header" id="sub-heading{sub_section.replace(" ", "")}">\n'
+                html_report += f'\t\t\t\t\t\t\t<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#sub-collapse{sub_section.replace(" ", "")}" aria-expanded="false" aria-controls="collapse{sub_section.replace(" ", "")}">{icons[sub_section]}{' '.join(word[0].upper() + word[1:] for word in sub_section.split())}</h2>\n'
+                html_report += f'\t\t\t\t\t\t\t\t<div id="sub-collapse{sub_section.replace(" ", "")}" class="accordion-collapse collapse" aria-labelledby="sub-heading{sub_section.replace(" ", "")}" data-bs-parent="#sub-accordion{section.replace(" ", "")}">\n'
+                html_report += '\t\t\t\t\t\t\t\t\t<div class="accordion-body bg-dark">\n'
+                html_report += '\t\t\t\t\t\t\t\t\t<div class="container-fluid text-center text-white"><div class="row"><div class="col border border-white">File Name</div><div class="col-6 border border-white">Details</div><div class="col border border-white">Legitimate Use</div><div class="col border border-white">Abuse</div></div>\n'
+                for file_path, list_details in files.items():
+                    file_name = file_path.split("/")[-1]
                     for detail in list_details:
-                        html += f'\t\t\t\t\t\t\t\t\t<tr><td>{file_name}</td><td>{detail["suspicious"]}</td><td>{detail["legitimate"]}</td><td>{detail["abuse"]}</td></tr>\n'
-                html += '\t\t\t\t\t\t\t\t\t</table>\n'
-                html += '\t\t\t\t\t\t\t\t\t</div>\n'
-                html += '\t\t\t\t\t\t\t\t</div>\n'
-                html += '\t\t\t\t\t\t\t</div>\n'
-            html += '\t\t\t\t\t\t\t</div>\n'
+                        html_report += f'\t\t\t\t\t\t\t\t\t<div class="row"><div class="col border border-white" data-bs-toggle="tooltip" data-bs-title="{file_path}" data-bs-placement="right">{file_name}</div><div class="col-6 border border-white">{html.escape(detail["suspicious"])}</div ><div class="col border border-white">{detail["legitimate"]}</div><div class="col border border-whites">{detail["abuse"]}</div></div>\n'
+                html_report += '\t\t\t\t\t\t\t\t\t</div>\n'
+                html_report += '\t\t\t\t\t\t\t\t\t</div>\n'
+                html_report += '\t\t\t\t\t\t\t\t</div>\n'
+                html_report += '\t\t\t\t\t\t\t</div>\n'
+            html_report += '\t\t\t\t\t\t\t</div>\n'
 
 
         else:
+            
             if (len(files)==0):
                 empty = True  
             else:
                 empty = False    
             
             if (section == "permissions"):
-                html += '\t\t\t\t\t\t<table class="table table-dark table-bordered"><tr><th>Details</th><th>Legitimate Use</th><th>Abuse</th></tr>\n'
-                for file_name, list_details in files.items():
+                html_report += '\t\t\t\t\t\t<div class="container-fluid text-center text-white"><div class="row"><div class="col-6">Details</div><div class="col">Legitimate Use</div><div class="col">Abuse</div></div>\n'
+                for file_path, list_details in files.items():
+                    
                     for detail in list_details:
-                        html += f'\t\t\t\t\t\t<tr><td>{detail["suspicious"]}</td><td>{detail["legitimate"]}</td><td>{detail["abuse"]}</td></tr>'
+                        html_report += f'\t\t\t\t\t\t<div class="row"><div class="col-6 border border-white"">{html.escape(detail["suspicious"])}</div><div class="col border border-white"">{detail["legitimate"]}</div><div class="col border border-white"">{detail["abuse"]}</div></div>'
             else:
-                html += '\t\t\t\t\t\t<table class="table table-dark table-bordered"><tr><th>File Name</th><th>Details</th><th>Legitimate Use</th><th>Abuse</th></tr>\n'
+                html_report += '\t\t\t\t\t\t<div class="container-fluid text-center text-white"><div class="row"><div class="col border border border-white">File Name</div><div class="col-6 border border border-white">Details</div><div class="col border border border-white">Legitimate Use</div><div class="col border border border-white">Abuse</div></div>\n'
                 
-                for file_name, list_details in files.items():
+                for file_path, list_details in files.items():
+                    file_name = file_path.split("/")[-1]
                     for detail in list_details:
-                        html += f'\t\t\t\t\t\t<tr><td>{file_name}</td><td>{detail["suspicious"]}</td><td>{detail["legitimate"]}</td><td>{detail["abuse"]}</td></tr>\n'
-            html += '\t\t\t\t\t\t</table>\n'
+                        html_report += f'\t\t\t\t\t\t<div class="row"><div class="col border border border-white" data-bs-toggle="tooltip" data-bs-title="{file_path}" data-bs-placement="top">{file_name}</div><div class="col-6 border border border-white">{html.escape(detail["suspicious"])}</div><div class="col border border border-white">{detail["legitimate"]}</div><div class="col border border border-white">{detail["abuse"]}</div></div>\n'
+            html_report += '\t\t\t\t\t\t</div>\n'
 
-        html += '\t\t\t\t\t</div>\n'
-        html += '\t\t\t\t</div>\n'
-        html += '\t</div>\n'
+        html_report += '\t\t\t\t\t</div>\n'
+        html_report += '\t\t\t\t</div>\n'
+        html_report += '\t</div>\n'
   
-    html +='</div></div>'
+    html_report +='</div></div>'
 
-    html += '</body></html>'
+    html_report += '</body></html>'
+
+    html_report += "<script>let tooltipelements = document.querySelectorAll(\"[data-bs-toggle='tooltip']\");tooltipelements.forEach((el) => {new bootstrap.Tooltip(el);});</script>"
     
     if (empty):
         print("Error: No strings found. Please check if path is a decompiled apk and try again.")
     try:
         if not os.path.exists(os.path.dirname("./flagged_items")):
             os.makedirs(os.path.dirname("./flagged_items"))
-        with open('./flagged_items/flagged_results.html', 'w') as f:
-            f.write(html)
+        with open('./flagged_items/flagged_results.html', 'w+') as flagged:
+            flagged.write(html_report)
         print("Saved output as /output/flagged_results.html")
     except:
         print("error creating ./flagged_items/flagged_results.html. please check if ")
