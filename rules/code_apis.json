@@ -36,12 +36,6 @@
         "abuse": "App may be sending data to a server"
     },
     {
-        "suspicious": "HttpPost",
-        "legitimate": "Indicates usage of HttpPost.",
-        "category": "Network Communication",
-        "abuse": "App may be using it for sending data to a server"
-    },
-    {
         "suspicious": "sendTextMessage",
         "legitimate": "Sends SMS messages.",
         "category": "Messages",
@@ -105,7 +99,7 @@
         "suspicious": "System",
         "legitimate": "General system usage.",
         "category": "Device Information and System Interaction",
-        "abuse": "Needs clarification"
+        "abuse": "May be used to execute system commands, potentially for privilege escalation or persistence"
     },
     {
         "suspicious": "sms",
@@ -129,7 +123,7 @@
         "suspicious": "accessibility",
         "legitimate": "Indicates accessibility functionality.",
         "category": "Accessibility and System Settings",
-        "abuse": "Needs clarification"
+        "abuse": "May be used to intercept or manipulate user input, leading to unauthorized actions"
     },
     {
         "suspicious": "Android",

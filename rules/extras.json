@@ -2,12 +2,12 @@
     {
         "suspicious": "valueOf",
         "legitimate": "General usage.",
-        "abuse": "Needs clarification"
+        "abuse": "Potentially used to obfuscate code by converting input types to strings or numbers"
     },
     {
         "suspicious": "concat",
         "legitimate": "General usage.",
-        "abuse": "Needs clarification"
+        "abuse": "Potentially used to concatenate strings in ways to obfuscate code"
     },
     {
         "suspicious": "<force-lock />",
