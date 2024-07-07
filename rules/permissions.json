@@ -65,11 +65,6 @@
         "abuse": "App may be taking pictures without user consent"
     },
     {
-        "suspicious": "android.permission.RECORD_VIDEO",
-        "legitimate": "This permission is used to record video from the device.",
-        "abuse": "App may be recording videos without user consent"
-    },
-    {
         "suspicious": "android.permission.READ_CALENDAR",
         "legitimate": "Allows an application to read the user's calendar data.",
         "abuse": "App may be reading calendar events which may contain sensitive information"
