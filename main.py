@@ -7,7 +7,6 @@ import json
 import argparse
 import sys
 import subprocess
-import rules
 from prettytable import PrettyTable, MARKDOWN
 import itertools
 import hashlib
@@ -15,13 +14,31 @@ import re
 import base64
 import html
 
+def get_identifier_from_path(path):
+    parts = path.split(os.sep)
+    parts = [part for part in parts if part]
+    return parts[-2] if len(parts) > 1 else parts[-1]
+
+def get_unique_directory_name(base_name, parent_directory="."):
+    counter = 1
+    unique_name = base_name
+    while os.path.exists(os.path.join(parent_directory, unique_name)):
+        unique_name = f"{base_name}_{counter}"
+        counter += 1
+    return unique_name
+
 def check_folders(directory, cwd, options):
     first_iteration = True
     android_manifest_found = False
     path_to_json = './rules/'
     json_files = [("./rules/" + pos_json) for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
-    output = {
-    }
+    output = {}
+    
+    identifier = get_identifier_from_path(directory)
+    new_directory_name = get_unique_directory_name(identifier, cwd)
+    new_directory_path = os.path.join(cwd, new_directory_name)
+    os.makedirs(new_directory_path, exist_ok=True)
+    
     for rule_path in json_files:
         try:
             with open(rule_path, "r") as outfile:
@@ -29,10 +46,9 @@ def check_folders(directory, cwd, options):
             if (options[rule_path]):
                 create_output(ruleset, rule_path.split("/")[-1].split(".")[0], output)
         except (json.decoder.JSONDecodeError):
-            print("Error occured with "+ rule_path)
+            print("Error occurred with " + rule_path)
     
-
-    json_create()
+    json_create(new_directory_path)
     for path, folders, files in os.walk(directory):
         for filename in files:
             try:
@@ -44,8 +60,8 @@ def check_folders(directory, cwd, options):
                     android_manifest_found = True
                 file_path = os.path.join(path, filename)
                 
-                output = rules.scan_file(file_path, cwd, options,output)
-                
+                output = rules.scan_file(file_path, cwd, options, output)
+
                 #if any(results):
                 '''
                     my_file = Path(cwd + "/flagged_files.json")
@@ -55,28 +71,31 @@ def check_folders(directory, cwd, options):
                         json_create()
                         first_iteration = False
                         '''
-    json_update(output)
+    json_update(output, new_directory_path)
     return output
-    
+
 def create_output(ruleset, ruleset_name, output):
-    
     output[ruleset_name] = {}
     for pattern in ruleset:
         if (ruleset_name =="code_apis"):
             output[ruleset_name][pattern["category"]] = {}
     return output
 
-def json_update(output):
+def json_update(output, new_directory_path):
     '''
     with open("flagged_files.json", "r") as outfile:
         data = json.load(outfile)
     file_name = list(file_info.keys())[0]
     data[file_name] = file_info[file_name]'''
-    with open("flagged_files.json", "w+") as outfile:
+    with open(os.path.join(new_directory_path, f"{new_directory_name}.json"), "w+") as outfile:
+    # with open(os.path.join(new_directory_path, "flagged_files.json"), "w+") as outfile:
+
         json.dump(output, outfile, indent=1)
 
-def json_create():
-    with open("flagged_files.json", "w+") as outfile:
+def json_create(new_directory_path):
+    with open(os.path.join(new_directory_path, f"{new_directory_name}.json"), "w+") as outfile:
+    # with open(os.path.join(new_directory_path, "flagged_files.json"), "w+") as outfile:
+
         json.dump({}, outfile)
 
 def decompile(directory, cwd, method, outputpath):
@@ -118,10 +137,10 @@ def decompile(directory, cwd, method, outputpath):
     except:
         print("Error: Output folder '" + outputpath + "' cannot be written into. Please check the folder and try again.")
 
-def generate_html_table(data, icons,directory):
-    count=0
+def generate_html_table(data, icons, directory):
+    count = 0
     try:
-        with open(directory+"/file_stat.json", "rb") as file:
+        with open(os.path.join(directory, "file_stat.json"), "rb") as file:
             content = json.load(file)
     except:
         print("Error: file_stats.json not found. Please check if path is a decompiled apk and try again.")
@@ -136,7 +155,7 @@ def generate_html_table(data, icons,directory):
     html_report += '<body style="background-color:#121212;color: #b9b9b9;">'
     html_report += '\n<div class="container-fluid border border border-white rounded mt-2">'
 
-    html_report+= '<div class="row"><div class="col"><p>Malwhere</p></div><div class="col">'
+    html_report += '<div class="row"><div class="col"><p>Malwhere</p></div><div class="col">'
     html_report += f'<div class="row"><div class="col"><p>Package name:</p></div><div class="col"><p>{content["package name"]}</p></div></div>'
     
     html_report += '<div class="row">'
@@ -144,7 +163,6 @@ def generate_html_table(data, icons,directory):
     
     html_report += '<div class="row">'
     html_report += f'<div class="col"><p>MD5:</p></div><div class="col"><p>{content["MD5"]}</p></div></div></div></div></div>'
-
 
     html_report += '\n<h1 class="text-center">Categories</h1>\n'
     html_report += '\n<div class="accordion container-fluid" id="accordionPanel">\n'
@@ -165,7 +183,7 @@ def generate_html_table(data, icons,directory):
             html_report += f'\t\t\t\t\t\t<div class="accordion" id="sub-accordion{section.replace(" ", "")}">\n'
 
             for sub_section, files in data[section].items():
-                if (len(files)==0):
+                if (len(files) == 0):
                     empty = True
                 else:
                     empty = False
@@ -174,29 +192,26 @@ def generate_html_table(data, icons,directory):
                 html_report += f'\t\t\t\t\t\t\t<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#sub-collapse{sub_section.replace(" ", "")}" aria-expanded="false" aria-controls="collapse{sub_section.replace(" ", "")}">{icons[sub_section]}{' '.join(word[0].upper() + word[1:] for word in sub_section.split())}</h2>\n'
                 html_report += f'\t\t\t\t\t\t\t\t<div id="sub-collapse{sub_section.replace(" ", "")}" class="accordion-collapse collapse" aria-labelledby="sub-heading{sub_section.replace(" ", "")}" data-bs-parent="#sub-accordion{section.replace(" ", "")}">\n'
                 html_report += '\t\t\t\t\t\t\t\t\t<div class="accordion-body bg-dark">\n'
-                html_report += '\t\t\t\t\t\t\t\t\t<div class="container-fluid text-center text-white"><div class="row"><div class="col border border-white">File Name</div><div class="col-6 border border-white">Details</div><div class="col border border-white">Legitimate Use</div><div class="col border border-white">Abuse</div></div>\n'
+                html_report += '\t\t\t\t\t\t\t\t\t<div class="container-fluid text-center text-white"><div class="row"><div class="col border border-white">File Name</div><div class="col-6 border border-white">Details</div><div class="col border border-white">Legitimate Use</div><div class="col border border-whites">Abuse</div></div>\n'
                 for file_path, list_details in files.items():
                     file_name = file_path.split("/")[-1]
                     for detail in list_details:
                         html_report += f'\t\t\t\t\t\t\t\t\t<div class="row"><div class="col border border-white" data-bs-toggle="tooltip" data-bs-title="{file_path}" data-bs-placement="right">{file_name}</div><div class="col-6 border border-white">{html.escape(detail["suspicious"])}</div ><div class="col border border-white">{detail["legitimate"]}</div><div class="col border border-whites">{detail["abuse"]}</div></div>\n'
                 html_report += '\t\t\t\t\t\t\t\t\t</div>\n'
                 html_report += '\t\t\t\t\t\t\t\t\t</div>\n'
-                html_report += '\t\t\t\t\t\t\t\t</div>\n'
+                html_report += '\t\t\t\t\t\t\t</div>\n'
                 html_report += '\t\t\t\t\t\t\t</div>\n'
             html_report += '\t\t\t\t\t\t\t</div>\n'
 
-
         else:
-            
-            if (len(files)==0):
-                empty = True  
+            if (len(files) == 0):
+                empty = True
             else:
-                empty = False    
-            
+                empty = False
+
             if (section == "permissions"):
                 html_report += '\t\t\t\t\t\t<div class="container-fluid text-center text-white"><div class="row"><div class="col-6">Details</div><div class="col">Legitimate Use</div><div class="col">Abuse</div></div>\n'
                 for file_path, list_details in files.items():
-                    
                     for detail in list_details:
                         html_report += f'\t\t\t\t\t\t<div class="row"><div class="col-6 border border-white"">{html.escape(detail["suspicious"])}</div><div class="col border border-white"">{detail["legitimate"]}</div><div class="col border border-white"">{detail["abuse"]}</div></div>'
             else:
@@ -211,8 +226,8 @@ def generate_html_table(data, icons,directory):
         html_report += '\t\t\t\t\t</div>\n'
         html_report += '\t\t\t\t</div>\n'
         html_report += '\t</div>\n'
-  
-    html_report +='</div></div>'
+
+    html_report += '</div></div>'
 
     html_report += '</body></html>'
 
@@ -221,13 +236,15 @@ def generate_html_table(data, icons,directory):
     if (empty):
         print("Error: No strings found. Please check if path is a decompiled apk and try again.")
     try:
-        if not os.path.exists(os.path.dirname("./flagged_items")):
-            os.makedirs(os.path.dirname("./flagged_items"))
-        with open('./flagged_items/flagged_results.html', 'w+') as flagged:
+        # output_filename = os.path.join(new_directory_name, 'flagged_results.html')
+        output_filename = os.path.join(new_directory_name, f"{new_directory_name}.html")
+        # print(new_directory_name) 
+        # print(directory)
+        with open(output_filename, 'w+') as flagged:
             flagged.write(html_report)
-        print("Saved output as /output/flagged_results.html")
+        print(f"Saved output as {output_filename}")
     except:
-        print("error creating ./flagged_items/flagged_results.html. please check if ")
+        print("error creating flagged_results.html. please check if path is a decompiled apk and try again.")
 
 
 if __name__ == "__main__":
@@ -249,7 +266,6 @@ if __name__ == "__main__":
     parser_analysis.add_argument("-l", "--logging", help="List all logging done in the APK.", default=False, required=False, action="store_true")
     parser_analysis.add_argument("-e", "--extras", help="List all extras used in the APK.", default=False, required=False, action="store_true")
 
-
     args = parser.parse_args()
     print(args)
     cwd = os.path.dirname(__file__)
@@ -257,6 +273,9 @@ if __name__ == "__main__":
     if not os.path.exists(args.path):
         print("Error: Folder/File '"+args.path+"' not found. Please check the path and try again.")
         sys.exit(1)
+
+    identifier = get_identifier_from_path(args.path)
+    new_directory_name = get_unique_directory_name(identifier, cwd)
 
     if args.subcommand == "decompile":
         dir_available = True
@@ -297,8 +316,7 @@ if __name__ == "__main__":
         else:
             print("Invalid Command or Option:\nError: Invalid command or option specified. Use 'malwh --help' to see available commands and options.")
         
-    
-        with open("flagged_files.json", "r") as outfile:
+        with open(os.path.join(cwd, new_directory_name, f"{new_directory_name}.json"), "r") as outfile: 
             data = json.load(outfile)
         #fill="currentColor" 
 
