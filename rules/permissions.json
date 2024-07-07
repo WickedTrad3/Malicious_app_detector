@@ -62,7 +62,12 @@
     {
         "suspicious": "android.permission.CAMERA",
         "legitimate": "Required to be able to access the camera device.",
-        "abuse": "App may be taking pictures or recording videos without user consent"
+        "abuse": "App may be taking pictures without user consent"
+    },
+    {
+        "suspicious": "android.permission.RECORD_VIDEO",
+        "legitimate": "This permission is used to record video from the device.",
+        "abuse": "App may be recording videos without user consent"
     },
     {
         "suspicious": "android.permission.READ_CALENDAR",
