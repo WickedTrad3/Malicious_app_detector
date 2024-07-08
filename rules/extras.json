@@ -10,6 +10,26 @@
         "abuse": "Potentially used to concatenate strings in ways to obfuscate code"
     },
     {
+        "suspicious": "event",
+        "legitimate": "General usage",
+        "abuse": "Potentially used to obfuscate code by using event handlers"
+    },
+    {
+        "suspicious": "eventType",
+        "legitimate": "Event type for event handlers.",
+        "abuse": "Potentially used to obfuscate code by using event handlers"
+    },
+    {
+        "suspicious": "eventClass",
+        "legitimate": "Event Class for event handlers.",
+        "abuse": "Potentially used to obfuscate code by using event handlers"
+    },
+    {
+        "suspicious": "eventHandler",
+        "legitimate": "Event handler for event handlers.",
+        "abuse": "Potentially used to obfuscate code by using event handlers"
+    },
+    {
         "suspicious": "<force-lock />",
         "legitimate": "Locks the device.",
         "abuse": "App may lock the device for ransomware"
