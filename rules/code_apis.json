@@ -186,6 +186,12 @@
         "abuse": "App may be loading classes dynamically for obfuscation"
     },
     {
+        "suspicious": "loadLib",
+        "legitimate": "Loads a library.",
+        "category": "System and Reflection",
+        "abuse": "App may be loading malicious libraries"
+    },
+    {
         "suspicious": "android.os.Build",
         "legitimate": "Provides information about the device.",
         "category": "Device Information and System Interaction",
