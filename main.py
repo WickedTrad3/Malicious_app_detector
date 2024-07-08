@@ -13,19 +13,30 @@ import hashlib
 import re
 import base64
 import html
+import time
+
+def get_current_time():
+    return time.strftime("%H-%M-%S-%d-%m-%Y")
 
 def get_identifier_from_path(path):
     parts = path.split(os.sep)
     parts = [part for part in parts if part]
     return parts[-2] if len(parts) > 1 else parts[-1]
 
+# def get_unique_directory_name(base_name, parent_directory="."):
+#     counter = 1
+#     unique_name = base_name
+#     while os.path.exists(os.path.join(parent_directory, unique_name)):
+#         unique_name = f"{base_name}_{counter}"
+#         counter += 1
+#     return unique_name
+
+
 def get_unique_directory_name(base_name, parent_directory="."):
-    counter = 1
-    unique_name = base_name
-    while os.path.exists(os.path.join(parent_directory, unique_name)):
-        unique_name = f"{base_name}_{counter}"
-        counter += 1
-    return unique_name
+    # modified_name = f"{base_name}_{current_time}"
+    # return modified_name
+    current_time = get_current_time()
+    return current_time
 
 def check_folders(directory, cwd, options):
     first_iteration = True
@@ -87,15 +98,18 @@ def json_update(output, new_directory_path):
         data = json.load(outfile)
     file_name = list(file_info.keys())[0]
     data[file_name] = file_info[file_name]'''
-    with open(os.path.join(new_directory_path, f"{new_directory_name}.json"), "w+") as outfile:
-    # with open(os.path.join(new_directory_path, "flagged_files.json"), "w+") as outfile:
+    current_time = get_current_time()
+    # with open(os.path.join(new_directory_path, current_time + ".json"), "w+") as outfile:
+    # with open(os.path.join(new_directory_path, f"{new_directory_name}.json"), "w+") as outfile:
+    with open(os.path.join(new_directory_path, "flagged_files.json"), "w+") as outfile:
 
         json.dump(output, outfile, indent=1)
 
 def json_create(new_directory_path):
-    with open(os.path.join(new_directory_path, f"{new_directory_name}.json"), "w+") as outfile:
-    # with open(os.path.join(new_directory_path, "flagged_files.json"), "w+") as outfile:
-
+    current_time = get_current_time()
+    # with open(os.path.join(new_directory_path, current_time + ".json"), "w+") as outfile:
+    # with open(os.path.join(new_directory_path, f"{new_directory_name}.json"), "w+") as outfile:
+    with open(os.path.join(new_directory_path, "flagged_files.json"), "w+") as outfile:
         json.dump({}, outfile)
 
 def decompile(directory, cwd, method, outputpath):
@@ -236,8 +250,10 @@ def generate_html_table(data, icons, directory):
     if (empty):
         print("Error: No strings found. Please check if path is a decompiled apk and try again.")
     try:
-        # output_filename = os.path.join(new_directory_name, 'flagged_results.html')
-        output_filename = os.path.join(new_directory_name, f"{new_directory_name}.html")
+        output_filename = os.path.join(new_directory_name, 'flagged_results.html')
+        # output_filename = os.path.join(new_directory_name, f"{new_directory_name}.html")
+        # current_time = get_current_time()
+        # output_filename = os.path.join(new_directory_name, current_time + ".html")
         # print(new_directory_name) 
         # print(directory)
         with open(output_filename, 'w+') as flagged:
@@ -316,7 +332,10 @@ if __name__ == "__main__":
         else:
             print("Invalid Command or Option:\nError: Invalid command or option specified. Use 'malwh --help' to see available commands and options.")
         
-        with open(os.path.join(cwd, new_directory_name, f"{new_directory_name}.json"), "r") as outfile: 
+        # current_time = get_current_time()
+        # with open(os.path.join(cwd, new_directory_name, current_time + ".json"), "r") as outfile:
+        # with open(os.path.join(cwd, new_directory_name, f"{new_directory_name}.json"), "r") as outfile: 
+        with open(os.path.join(cwd, new_directory_name, "flagged_files.json"), "r") as outfile:
             data = json.load(outfile)
         #fill="currentColor" 
 
