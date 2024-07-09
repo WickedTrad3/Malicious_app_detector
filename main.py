@@ -15,28 +15,17 @@ import base64
 import html
 import time
 
-def get_current_time():
-    return time.strftime("%H-%M-%S-%d-%m-%Y")
+# def get_current_time():
+#     return time.strftime("%H-%M-%S-%d-%m-%Y")
 
-def get_identifier_from_path(path):
-    parts = path.split(os.sep)
-    parts = [part for part in parts if part]
-    return parts[-2] if len(parts) > 1 else parts[-1]
+# def get_identifier_from_path(path):
+#     parts = path.split(os.sep)
+#     parts = [part for part in parts if part]
+#     return parts[-2] if len(parts) > 1 else parts[-1]
 
 # def get_unique_directory_name(base_name, parent_directory="."):
-#     counter = 1
-#     unique_name = base_name
-#     while os.path.exists(os.path.join(parent_directory, unique_name)):
-#         unique_name = f"{base_name}_{counter}"
-#         counter += 1
-#     return unique_name
-
-
-def get_unique_directory_name(base_name, parent_directory="."):
-    # modified_name = f"{base_name}_{current_time}"
-    # return modified_name
-    current_time = get_current_time()
-    return current_time
+#     current_time = time.strftime("%H-%M-%S-%d-%m-%Y")
+#     return current_time
 
 def check_folders(directory, cwd, options):
     first_iteration = True
@@ -45,8 +34,9 @@ def check_folders(directory, cwd, options):
     json_files = [("./rules/" + pos_json) for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
     output = {}
     
-    identifier = get_identifier_from_path(directory)
-    new_directory_name = get_unique_directory_name(identifier, cwd)
+    # identifier = get_identifier_from_path(directory)
+    # new_directory_name = get_unique_directory_name(identifier, cwd)
+    new_directory_name = time.strftime("%H-%M-%S-%d-%m-%Y")
     new_directory_path = os.path.join(cwd, new_directory_name)
     os.makedirs(new_directory_path, exist_ok=True)
     
@@ -72,16 +62,6 @@ def check_folders(directory, cwd, options):
                 file_path = os.path.join(path, filename)
                 
                 output = rules.scan_file(file_path, cwd, options, output)
-
-                #if any(results):
-                '''
-                    my_file = Path(cwd + "/flagged_files.json")
-                    print("file not found")
-                    if ((not my_file.is_file()) and first_iteration):
-                        
-                        json_create()
-                        first_iteration = False
-                        '''
     json_update(output, new_directory_path)
     return output
 
@@ -93,22 +73,12 @@ def create_output(ruleset, ruleset_name, output):
     return output
 
 def json_update(output, new_directory_path):
-    '''
-    with open("flagged_files.json", "r") as outfile:
-        data = json.load(outfile)
-    file_name = list(file_info.keys())[0]
-    data[file_name] = file_info[file_name]'''
-    current_time = get_current_time()
-    # with open(os.path.join(new_directory_path, current_time + ".json"), "w+") as outfile:
-    # with open(os.path.join(new_directory_path, f"{new_directory_name}.json"), "w+") as outfile:
+    current_time = time.strftime("%H-%M-%S-%d-%m-%Y")
     with open(os.path.join(new_directory_path, "flagged_files.json"), "w+") as outfile:
-
         json.dump(output, outfile, indent=1)
 
 def json_create(new_directory_path):
-    current_time = get_current_time()
-    # with open(os.path.join(new_directory_path, current_time + ".json"), "w+") as outfile:
-    # with open(os.path.join(new_directory_path, f"{new_directory_name}.json"), "w+") as outfile:
+    current_time = time.strftime("%H-%M-%S-%d-%m-%Y")
     with open(os.path.join(new_directory_path, "flagged_files.json"), "w+") as outfile:
         json.dump({}, outfile)
 
@@ -180,12 +150,6 @@ def generate_html_table(data, icons, directory):
 
     html_report += '\n<h1 class="text-center">Categories</h1>\n'
     html_report += '\n<div class="accordion container-fluid" id="accordionPanel">\n'
-
-
-
-    #image = open('./icons/code.svg', 'rb').read() # read bytes from file
-    #data_base64 = base64.b64encode(image)  # encode to base64 (bytes)
-    #data_base64 = data_base64.decode()
     for section, files in data.items():
         html_report += '\t<div class="accordion-item">\n'
         html_report += f'\t\t<h2 class="accordion-header d-flex" id="heading{section.replace(" ", "")}">\n'
@@ -251,29 +215,176 @@ def generate_html_table(data, icons, directory):
         print("Error: No strings found. Please check if path is a decompiled apk and try again.")
     try:
         output_filename = os.path.join(new_directory_name, 'flagged_results.html')
-        # output_filename = os.path.join(new_directory_name, f"{new_directory_name}.html")
-        # current_time = get_current_time()
-        # output_filename = os.path.join(new_directory_name, current_time + ".html")
-        # print(new_directory_name) 
-        # print(directory)
         with open(output_filename, 'w+') as flagged:
             flagged.write(html_report)
         print(f"Saved output as {output_filename}")
     except:
         print("error creating flagged_results.html. please check if path is a decompiled apk and try again.")
 
+def load_json(file_path):
+    with open(file_path, 'r') as file:
+        return json.load(file)
+
+def save_json(file_path, data):
+    with open(file_path, 'w') as file:
+        json.dump(data, file, indent=4)
+
+def get_categories(file_path):
+    data = load_json(file_path)
+    categories = set(entry['category'] for entry in data)
+    return sorted(categories)
+
+def add_new_rule(file_path):
+    data = load_json(file_path)
+    suspicious = input("Enter the suspicious item: ").strip()
+    
+    if any(entry['suspicious'].lower() == suspicious.lower() for entry in data):
+        print(f"The suspicious item '{suspicious}' already exists. Exiting...")
+        return
+    
+    legitimate = input("Enter the legitimate reasoning: ").strip()
+    abuse = input("Enter the potential abuse: ").strip()
+    
+    if os.path.basename(file_path) == "code_apis.json":
+        categories = get_categories(file_path)
+        print("Choose the category for the new rule:")
+        for idx, category in enumerate(categories, start=1):
+            print(f"{idx}. {category}")
+        
+        category_choice = input("Enter the number to select the category: ").strip()
+        try:
+            category_idx = int(category_choice) - 1
+            if 0 <= category_idx < len(categories):
+                category = categories[category_idx]
+            else:
+                print("Invalid category choice. Exiting...")
+                return
+        except ValueError:
+            print("Invalid input. Exiting...")
+            return
+
+        new_rule = {
+            "suspicious": suspicious,
+            "legitimate": legitimate,
+            "category": category,
+            "abuse": abuse
+        }
+    else:
+        new_rule = {
+            "suspicious": suspicious,
+            "legitimate": legitimate,
+            "abuse": abuse
+        }
+
+    data.append(new_rule)
+    save_json(file_path, data)
+    print(f"New rule added to {file_path}.")
+
+def remove_rule(file_path):
+    data = load_json(file_path)
+    suspicious = input("Enter the suspicious item to remove: ").strip()
+    
+    item_index = next((i for i, entry in enumerate(data) if entry['suspicious'].lower() == suspicious.lower()), None)
+    
+    if item_index is not None:
+        removed_item = data.pop(item_index)
+        save_json(file_path, data)
+        print(f"Removed rule: {removed_item}")
+    else:
+        print(f"The suspicious item '{suspicious}' was not found.")
+
+def modify_rule(file_path):
+    data = load_json(file_path)
+    suspicious = input("Enter the suspicious item to modify: ").strip()
+    
+    item_index = next((i for i, entry in enumerate(data) if entry['suspicious'].lower() == suspicious.lower()), None)
+    
+    if item_index is not None:
+        print(f"Current rule: {data[item_index]}")
+        new_suspicious = input("Enter the new suspicious item name (leave blank to keep current): ").strip()
+        legitimate = input("Enter the new legitimate reasoning (leave blank to keep current): ").strip()
+        abuse = input("Enter the new potential abuse (leave blank to keep current): ").strip()
+        
+        if os.path.basename(file_path) == "code_apis.json":
+            categories = get_categories(file_path)
+            print("Choose a new category (leave blank to keep current):")
+            for idx, category in enumerate(categories, start=1):
+                print(f"{idx}. {category}")
+            category_choice = input("Enter the number of the category: ").strip()
+            if category_choice:
+                try:
+                    category_idx = int(category_choice) - 1
+                    if 0 <= category_idx < len(categories):
+                        data[item_index]['category'] = categories[category_idx]
+                    else:
+                        print("Invalid category choice. Keeping current category.")
+                except ValueError:
+                    print("Invalid input. Keeping current category.")
+        
+        if new_suspicious:
+            if new_suspicious.lower() != data[item_index]['suspicious'].lower() and any(
+                entry['suspicious'].lower() == new_suspicious.lower() for entry in data):
+                print(f"The new suspicious item '{new_suspicious}' already exists. Cannot modify to this name.")
+                return
+            data[item_index]['suspicious'] = new_suspicious
+        if legitimate:
+            data[item_index]['legitimate'] = legitimate
+        if abuse:
+            data[item_index]['abuse'] = abuse
+        
+        save_json(file_path, data)
+        print(f"Modified rule: {data[item_index]}")
+    else:
+        print(f"The suspicious item '{suspicious}' was not found.")
+
+def update_rules():
+    rules_folder = "rules"
+    if not os.path.exists(rules_folder):
+        print(f"The folder '{rules_folder}' does not exist.")
+        return
+
+    json_files = [f for f in os.listdir(rules_folder) if f.endswith('.json')]
+
+    if not json_files:
+        print("No JSON files found in the 'rules' folder.")
+        return
+
+    print("Choose a file to add, remove, or modify a rule:")
+    for idx, file_name in enumerate(json_files, start=1):
+        print(f"{idx}. {os.path.splitext(file_name)[0]}")
+    
+    choice = input("Enter the number of the file: ").strip()
+    
+    try:
+        choice_idx = int(choice) - 1
+        if 0 <= choice_idx < len(json_files):
+            file_path = os.path.join(rules_folder, json_files[choice_idx])
+            action = input("Do you want to (a)dd, (r)emove, or (m)odify a rule? ").strip().lower()
+            if action == 'a':
+                add_new_rule(file_path)
+            elif action == 'r':
+                remove_rule(file_path)
+            elif action == 'm':
+                modify_rule(file_path)
+            else:
+                print("Invalid action. Exiting...")
+        else:
+            print("Invalid choice. Exiting...")
+    except ValueError:
+        print("Invalid input. Exiting...")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="malwh", description="APK Analysis CLI Tool")
     
     subparsers = parser.add_subparsers(help='help for subcommand', required=True, dest="subcommand")
-    parser.add_argument("path", help="full path of the apk", type=str)
+    # parser.add_argument("path", help="full path of the apk", type=str)
 
     parser_decompile = subparsers.add_parser('decompile', help='Decompile help')
     parser_decompile.add_argument('decompile_method', help='decompilation method between java and smali', choices=('java', 'smali'))
     parser_decompile.add_argument('-o', '--output', help='output directory for decompiled source code', type=str)
-    parser_analysis = subparsers.add_parser('analysis', help='Analysis help')
+    parser_decompile.add_argument("path", help="full path of the apk", type=str)
 
+    parser_analysis = subparsers.add_parser('analysis', help='Analysis help')
     parser_analysis.add_argument("-vv", "--very-verbose", help="Enable very verbose output for detailed analysis. Recommended to use after decompiling", default=False, required=False, action="store_true")
     parser_analysis.add_argument("-p", "--permissions", help="Scan for permissions", default=False, required=False, action="store_true")
     parser_analysis.add_argument("-u", "--urls", help="List all URLs found in the APK.", default=False, required=False, action="store_true")
@@ -281,17 +392,23 @@ if __name__ == "__main__":
     parser_analysis.add_argument("-i", "--intents", help="List all intents used in the APK.", default=False, required=False, action="store_true")
     parser_analysis.add_argument("-l", "--logging", help="List all logging done in the APK.", default=False, required=False, action="store_true")
     parser_analysis.add_argument("-e", "--extras", help="List all extras used in the APK.", default=False, required=False, action="store_true")
+    parser_analysis.add_argument("path", help="full path of the apk", type=str)
 
+    parser_modify_rules = subparsers.add_parser('modify-rules', help='Modify JSON rules')
+    
     args = parser.parse_args()
     print(args)
     cwd = os.path.dirname(__file__)
     non_verbose_mode = True
-    if not os.path.exists(args.path):
+    # if not os.path.exists(args.path):
+    #     print("Error: Folder/File '"+args.path+"' not found. Please check the path and try again.")
+    #     sys.exit(1)
+    if args.subcommand in ["decompile", "analysis"] and not os.path.exists(args.path):
         print("Error: Folder/File '"+args.path+"' not found. Please check the path and try again.")
         sys.exit(1)
 
-    identifier = get_identifier_from_path(args.path)
-    new_directory_name = get_unique_directory_name(identifier, cwd)
+    # identifier = get_identifier_from_path(args.path)
+    new_directory_name = time.strftime("%H-%M-%S-%d-%m-%Y")
 
     if args.subcommand == "decompile":
         dir_available = True
@@ -307,7 +424,7 @@ if __name__ == "__main__":
         
         else:
             print("Error: File '"+args.path+"' not found. Please check the filename and try again.")
-    else:
+    elif args.subcommand == "analysis":
         if args.very_verbose:
             options = {
                 "./rules/permissions.json":True,
@@ -331,15 +448,8 @@ if __name__ == "__main__":
             output = check_folders(args.path, cwd, options)
         else:
             print("Invalid Command or Option:\nError: Invalid command or option specified. Use 'malwh --help' to see available commands and options.")
-        
-        # current_time = get_current_time()
-        # with open(os.path.join(cwd, new_directory_name, current_time + ".json"), "r") as outfile:
-        # with open(os.path.join(cwd, new_directory_name, f"{new_directory_name}.json"), "r") as outfile: 
         with open(os.path.join(cwd, new_directory_name, "flagged_files.json"), "r") as outfile:
             data = json.load(outfile)
-        #fill="currentColor" 
-
-        #icons svgs for each category stored in dictionary to embed into html file
         icons = {
             "code_apis": '<?xml version="1.0" encoding="UTF-8"?><svg style="color:white;" class="me-2" version="1.1" viewBox="0 0 2048 2048" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" transform="translate(1183,338)" d="m0 0h25l16 4 16 8 10 7 10 9 10 14 7 15 4 16v23l-3 15-48 168-59 207-59 206-59 207-59 206-56 196-6 17-9 16-11 12-7 6-13 8-16 6-14 3h-18l-18-4-16-7-12-9-8-7-11-15-7-14-4-16-1-8v-10l3-18 15-53 13-46 11-38 288-1008 15-53 6-16 9-14 9-10 8-7 13-8 12-5z"/><path fill="currentColor" transform="translate(500,596)" d="m0 0h25l14 3 16 7 14 10 11 11 10 15 6 16 3 14v19l-4 17-7 16-9 13-6 7h-2l-2 4-12 12h-2l-2 4h-2l-2 4-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-7 6-5 6-6 5-6 7-7 6-5 6-7 6-5 6-6 5-6 7-4 4h-2l-2 4-3 1-2 4-14 14 2 4 76 76v2l4 2v2l4 2v2l4 2v2l4 2v2l4 2v2l4 2 100 100v2l4 2v2l4 2v2l4 2v2l4 2v2l4 2v2l4 2v2l4 2v2l4 2v2l4 2v2l4 2v2l4 2v2l4 2v2l4 2v2l4 2v2l4 2 16 16 7 8 9 13 6 12 4 15 1 6v19l-4 17-7 16-10 14-9 9-10 7-16 8-15 4-7 1h-18l-15-3-16-7-11-7-12-11-342-342-9-12-6-10-6-18-2-13v-9l2-13 3-11 5-12 7-11 11-12 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 7-6 5-6 6-5 6-7 6-5 6-7 6-5 7-8h2l2-4h2l2-4h2l2-4h2l2-4h2l1-3 8-7 12-9 15-7z"/><path fill="currentColor" transform="translate(1522,596)" d="m0 0h26l16 4 16 8 12 9 10 10 6 5 6 7 6 5 7 8 103 103 6 5 6 7 6 5 6 7 6 5 6 7 6 5 7 8 139 139 6 5 7 8 12 12 9 13 6 12 5 19v23l-4 17-8 16-9 13-351 351-10 7-14 7-13 4-11 2h-17l-16-3-16-7-11-7-12-11-9-12-8-16-4-13-1-6v-21l4-17 7-16 10-13 9-10 275-275-1-4-284-284-9-13-7-15-4-16v-22l4-17 6-14 10-14 7-8 13-10 14-7 13-4z"/></svg>',
             "Messages": '<?xml version="1.0" encoding="UTF-8"?><svg version="1.1" class="me-2" viewBox="0 0 1024 1024" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" transform="translate(574,65)" d="m0 0h63l32 3 28 4 33 7 28 8 20 7 21 8 28 13 22 12 16 10 12 8 19 14 14 12 11 10 8 7 9 9 7 8 9 10 15 20 12 18 13 23 11 25 7 21 6 22 4 20 2 2v77h-2l-6 31-8 27-10 24-8 16-9 16-9 14-9 12-10 13-7 8-9 10-19 19-11 9-12 10h-2v20l3 115v51l-4 8-8 7-9 3h-9l-7-3-8-6-15-14-8-7-8-8-8-7-17-16-12-11-26-24-16-15-13-12h-7l-51 9-40 3-36 2-11 7-14 10-22 13-17 9-23 10-31 11-31 8-26 5-33 4-16 1h-35l-30-2-29-4h-6l-10 9-6 6h-2v2l-8 7-3 3h-2v2l-8 7-16 15-12 11-15 14-24 22-15 14-12 11-11 10-10 6-3 1h-10l-8-3-8-7-4-8-1-6 1-47 4-147v-13l-17-17-9-11-8-9-14-20-12-21-9-19-9-25-6-26-3-12v-60l5-22 5-19 6-18 9-20 8-15 12-19 14-18 7-8 12-13 10-10 11-9 9-8 17-12 15-10 21-12 29-14 32-12 20-32 11-14 9-12 9-9 7-8 6-7 8-7 11-10 11-9 16-12 16-11 25-15 23-12 19-9 35-13 35-10 27-6 32-5zm17 50-30 2-31 4-30 6-25 7-24 8-27 11-28 14-25 15-19 14-14 11-14 13-20 20-11 14-13 18-12 20-10 21-9 25-5 19-4 26-1 16v13l2 24 5 26 6 20 8 20 8 16 6 11 11 17 14 18 9 10 12 13 14 13 11 9 13 10 16 11 17 10 18 10 26 12 29 11 28 8 27 6 24 4 28 3 18 1h37l28-2 29-4 29-6 20-4 8 1 10 5 12 11 26 24 15 14 13 12 4 2v2l8 7 15 14h1v-24l-2-72v-37l3-9 7-8 14-11 11-9 10-9 21-21 11-14 8-10 14-22 15-30 9-27 5-22 2-12 1-13v-34l-2-17-5-24-5-16-7-19-10-21-14-23-10-13-13-16-8-8-1-2h-2l-2-4-13-12-11-9-17-13-15-10-20-12-23-12-23-10-34-12-30-8-26-5-23-3-20-2-20-1zm-395 220-16 8-13 7-12 8-18 13-14 13-8 7-9 9-9 11-10 13-13 21-10 21-6 18-5 21-2 16-1 21 1 17 4 22 6 21 10 23 9 16 13 19 12 14 12 13 8 7 9 10 3 6 1 4v29l-3 105v25l4-2 7-7 8-7 8-8 8-7 15-14 8-7 7-7 8-7 7-7 8-7 16-15 10-8 9-4 17 1 32 5 28 2h32l29-2 41-7 40-12 26-11 8-4-3-2-16-4-35-9-46-17-40-20-19-11-34-24-11-9-10-9-8-7-20-20-18-22-13-19-10-16-7-12-13-29-9-28-5-23-3-17-2-27v-13l2-28 5-29 1-8z"/><path fill="currentColor" transform="translate(391,331)" d="m0 0h15l16 3 13 5 11 7 10 9 10 11 8 15 4 12 2 13v13l-2 12-4 12-8 15-9 11-12 10-17 9-14 4-7 1h-17l-12-2-16-6-11-7-10-9-9-10-8-14-5-15-2-13v-9l2-13 4-13 7-14 10-13 11-9 13-8 14-5zm1 51-10 4-5 4-5 7-3 9v13l4 9 5 7 8 5 8 2h10l9-3 9-7 5-8 2-9-1-11-4-9-6-7-10-5-4-1z"/><path fill="currentColor" transform="translate(814,331)" d="m0 0h15l16 3 12 5 13 8 13 12 9 13 6 13 4 16v22l-4 16-8 16-4 6-9 10-8 7-14 8-14 5-12 2h-17l-15-3-16-7-11-8-10-9-8-11-8-16-3-11-1-7v-17l3-15 5-13 6-10 9-11 9-8 11-7 11-5 12-3zm1 51-10 4-8 7-5 10-1 5v9l3 9 7 9 10 6 5 1h11l10-4 8-7 4-6 2-6v-13l-4-10-7-8-9-5-4-1z"/><path fill="currentColor" transform="translate(602,331)" d="m0 0h16l15 3 13 5 11 7 10 8 10 12 7 12 5 14 2 11v19l-4 16-5 12-7 11-12 13-10 7-14 7-14 4-7 1h-18l-14-3-12-5-12-7-13-12-9-12-7-15-4-15-1-12 2-16 5-16 7-13 9-11 7-7 10-7 12-6 14-4zm2 51-9 3-7 5-6 10-2 6v12l4 10 7 8 6 4 8 2h10l9-3 8-6 6-9 2-7v-9l-3-10-6-8-9-6-6-2z"/></svg>',
@@ -362,3 +472,5 @@ if __name__ == "__main__":
         
         }
         generate_html_table(output, icons,args.path)
+    elif args.subcommand == "modify-rules":
+        update_rules()
