@@ -15,6 +15,7 @@ import base64
 import html
 import time
 import shutil
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # def get_current_time():
 #     return time.strftime("%H-%M-%S-%d-%m-%Y")
@@ -34,17 +35,17 @@ def check_folders(directory, cwd, options):
     path_to_json = './rules/'
     json_files = [("./rules/" + pos_json) for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
     output = {}
-    
+
     for rule_path in json_files:
         try:
             with open(rule_path, "r") as outfile:
                 ruleset = json.load(outfile)
-            if (options[rule_path]):
+            if options[rule_path]:
                 create_output(ruleset, rule_path.split("/")[-1].split(".")[0], output)
-        except (json.decoder.JSONDecodeError):
-            print("Error occurred with " + rule_path)
-    
-    
+        except json.decoder.JSONDecodeError:
+            print(f"Error occurred with {rule_path}")
+
+    file_paths = []
     for path, folders, files in os.walk(directory):
         for filename in files:
             try:
@@ -54,11 +55,20 @@ def check_folders(directory, cwd, options):
             if filename == "AndroidManifest.xml" or extension == "java" or extension == "smali":
                 if filename == "AndroidManifest.xml":
                     android_manifest_found = True
-                file_path = os.path.join(path, filename)
-                
-                output = rules.scan_file(file_path, cwd, options, output)
-    
+                file_paths.append(os.path.join(path, filename))
+
+    with ThreadPoolExecutor(max_workers=8) as executor:  # Adjust the number of workers as needed
+        futures = {executor.submit(analyse_file, file_path, cwd, options, output): file_path for file_path in file_paths}
+        for future in as_completed(futures):
+            file_path = futures[future]
+            try:
+                result = future.result()
+                output.update(result)
+            except Exception as e:
+                print(f"Error analysing {file_path}: {e}")
+
     return output
+
 
 def create_output(ruleset, ruleset_name, output):
     output[ruleset_name] = {}
@@ -85,7 +95,8 @@ def decompile(apk_path, cwd, method, outputpath):
         process.wait()  # Wait for process to complete.
 
     elif sys.platform == "win32":
-        process = subprocess.Popen([os.path.normpath(cwd + "decompile.bat"), directory], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen([os.path.normpath(cwd + "/decompile.bat"), apk_path, outputpath, method], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # process = subprocess.Popen([os.path.normpath(cwd + "decompile.bat"), directory], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()  # Wait for process to complete.
     try:
         with open(apk_path, "rb") as file:
@@ -227,7 +238,6 @@ def generate_html_table(data, icons, directory):
                         category_html += f'\t\t\t\t\t\t<div class="row"><div class="col border border-white py-3" data-bs-toggle="tooltip" data-bs-title="{file_path}" data-bs-placement="right">{file_name}: Line {detail["line number"]}</div><div class="col-6 border border-white py-3">{html.escape(detail["suspicious"])}</div><div class="col border border-white py-3">{detail["legitimate"]}</div><div class="col border border-white py-3">{detail["abuse"]}</div></div>\n'
                 category_html += "<script>let tooltipelements = document.querySelectorAll(\"[data-bs-toggle='tooltip']\");tooltipelements.forEach((el) => {new bootstrap.Tooltip(el);});</script>"
             category_html += '\t\t\t\t\t\t</div>\n'
-        #body + div container-fuild
         category_html += '</body></div">'
         if (all(empty)):
             print(f"Error: No strings found in {category}. Please check if path is a decompiled apk and try again.")
@@ -328,6 +338,7 @@ def generate_html_table(data, icons, directory):
     except:
         print("error creating flagged_results.html. please check if path is a decompiled apk and try again.")
     '''
+
 def load_json(file_path):
     with open(file_path, 'r') as file:
         return json.load(file)
@@ -445,6 +456,7 @@ def modify_rule(file_path):
         print(f"The suspicious item '{suspicious}' was not found.")
 
 def update_rules():
+
     rules_folder = "rules"
     if not os.path.exists(rules_folder):
         print(f"The folder '{rules_folder}' does not exist.")
@@ -480,6 +492,18 @@ def update_rules():
     except ValueError:
         print("Invalid input. Exiting...")
 
+def analyse_file(file_path, cwd, options, output):
+    try:
+        # print(f"Analysing {file_path}")
+        result = rules.scan_file(file_path, cwd, options, output)
+        # print(f"Successfully analysed {file_path}")
+        return result
+    except Exception as e:
+        print(f"Error in analysing {file_path}: {e}")
+        return {}
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="malwh", description="APK Analysis CLI Tool")
     
@@ -514,7 +538,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # identifier = get_identifier_from_path(args.path)
-    new_directory_name = time.strftime("%H-%M-%S-%d-%m-%Y")
+    # new_directory_name = time.strftime("%H-%M-%S-%d-%m-%Y")
 
     if args.subcommand == "decompile":
         dir_available = True
@@ -554,13 +578,13 @@ if __name__ == "__main__":
             output = check_folders(args.path, cwd, options)
         else:
             print("Invalid Command or Option:\nError: Invalid command or option specified. Use 'malwh --help' to see available commands and options.")
-        
-        with open("flagged_files.json", "r") as outfile:
-            data = json.load(outfile)
-
+    
         # identifier = get_identifier_from_path(directory)
         # new_directory_name = get_unique_directory_name(identifier, cwd)
-        new_directory_name = time.strftime("%H-%M-%S-%d-%m-%Y")
+        # new_directory_name = time.strftime("%H-%M-%S-%d-%m-%Y")
+        new_directory_name = time.strftime("%I-%M-%S %p %d-%m-%Y UTC+8") # with UTC+
+        # new_directory_name = time.strftime("%I-%M-%S %p %d-%m-%Y") # without UTC
+
         new_directory_path = os.path.join(cwd, new_directory_name)
         os.makedirs(new_directory_path, exist_ok=True)
         shutil.copyfile('./icons/malwhere.png', new_directory_name+'/malwhere.png')
