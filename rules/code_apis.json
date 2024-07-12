@@ -506,52 +506,61 @@
     {
         "suspicious": "valueOf",
         "legitimate": "General usage.",
+        "category": "File and Data Handling",
         "abuse": "Potentially used to obfuscate code by converting input types to strings or numbers"
     },
     {
         "suspicious": "concat",
         "legitimate": "General usage.",
+        "category": "File and Data Handling",
         "abuse": "Potentially used to concatenate strings in ways to obfuscate code"
     },
     {
         "suspicious": "event",
         "legitimate": "General usage",
+        "category": "User Interface",
         "abuse": "Potentially used to obfuscate code by using event handlers"
     },
     {
         "suspicious": "eventType",
         "legitimate": "Event type for event handlers.",
+        "category": "User Interface",
         "abuse": "Potentially used to obfuscate code by using event handlers"
     },
     {
         "suspicious": "eventClass",
         "legitimate": "Event Class for event handlers.",
+        "category": "User Interface",
         "abuse": "Potentially used to obfuscate code by using event handlers"
     },
     {
         "suspicious": "eventHandler",
         "legitimate": "Event handler for event handlers.",
+        "category": "User Interface",
         "abuse": "Potentially used to obfuscate code by using event handlers"
     },
     {
         "suspicious": "<force-lock />",
         "legitimate": "Locks the device.",
+        "category": "Accessibility and System Settings",
         "abuse": "App may lock the device for ransomware"
     },
     {
         "suspicious": "<wipe-data />",
         "legitimate": "Wipes device data.",
+        "category": "Accessibility and System Settings",
         "abuse": "App may wipe device data remotely for ransomware"
     },
     {
         "suspicious": "<encrypted-storage />",
         "legitimate": "Enforces encryption.",
+        "category": "Cryptography",
         "abuse": "App may enforce encryption for ransomware"
     },
     {
         "suspicious": "<limit-password />",
         "legitimate": "Enforces password policies.",
+        "category": "Accessibility and System Settings",
         "abuse": "App enforces password policies, possibly to lock out user"
     }
-
 ]
