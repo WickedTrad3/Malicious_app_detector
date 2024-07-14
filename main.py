@@ -490,7 +490,31 @@ def analyse_file(file_path, cwd, options, output):
         print(f"Error in analysing {file_path}: {e}")
         return {}
 
+# def analyse_file(file_path, cwd, options, output):
+#     try:
+#         with open(file_path, 'rb') as file:
+#             # raw_data = file.read()
+#             # detected_encoding = chardet.detect(raw_data)['encoding']
+#             raw_data = file.read(10000)
+#         detected_encoding = chardet.detect(raw_data)['encoding']
 
+#         if not detected_encoding:
+#             detected_encoding = 'utf-8'
+
+#         try:
+#             with open(file_path, 'r', encoding=detected_encoding) as file:
+#                 pass
+#         except UnicodeDecodeError:
+#             print(f"Unable to decode {file_path} with {detected_encoding} encoding.")
+
+#         # print(f"Analysing {file_path}")
+#         result = rules.scan_file(file_path, cwd, options, output)
+#         # print(f"Successfully analysed {file_path}")
+#         return result
+
+#     except Exception as e:
+#         print(f"Error in analysing {file_path}: {e}")
+#         return {}
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="malwh", description="APK Analysis CLI Tool")
