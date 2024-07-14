@@ -197,7 +197,7 @@ def generate_html_table(data, icons, directory):
     #category links
     main_html +='           <h5 class="d-flex align-items-center lead"><hr width="20px" size="5">Category Links</h5>\n'
     for category, files in data.items():
-        main_html +=f'           <h5 style="margin-left: 20px;color: #3f248d;" class="text-wrap w-100"><a class="category_link" href="./{category}.html">{' '.join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'
+        main_html +=f'           <h5 style="margin-left: 20px;color: #3f248d;" class="text-wrap w-100"><a class="category_link" href="./{category}.html">{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'
     main_html +='       </div>\n'
 
     #main section with FYP group number and grid for cards
@@ -212,7 +212,7 @@ def generate_html_table(data, icons, directory):
         main_html +='                   <div class="col">\n'\
                     '                       <div class="card category_card" style="height: 400px;">\n'\
                     '                           <div class="card-body">\n'\
-                    f'                              {icons[category]}<h5 class="card-title">{' '.join(word[0].upper() + word[1:] for word in category.split())}</h5>\n'\
+                    f'                              {icons[category]}<h5 class="card-title">{" ".join(word[0].upper() + word[1:] for word in category.split())}</h5>\n'\
                     '                               <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card\'s content.</p>\n'\
                     f'                               <a href="./{category}.html" class="btn btn-primary stretched-link">Go somewhere</a>\n'\
                     '                           </div>\n'\
@@ -221,7 +221,7 @@ def generate_html_table(data, icons, directory):
 
     try:
         output_filename = os.path.join(new_directory_name, f'main.html')
-        with open(output_filename, 'w+') as flagged:
+        with open(output_filename, 'w+', encoding="utf-8", errors='ignore') as flagged:
             flagged.write(main_html)
         print(f"Saved output as {output_filename}")
     except:
@@ -271,7 +271,7 @@ def generate_html_table(data, icons, directory):
             if (category == current_category):
                 category_html += '          <h5 style="margin-left: 5px;color: #3f248d;" class="text-wrap w-100"><a href="./main.html"><div class=" d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left" viewBox="0 0 16 16"><path d="M10 12.796V3.204L4.519 8zm-.659.753-5.48-4.796a1 1 0 0 1 0-1.506l5.48-4.796A1 1 0 0 1 11 3.204v9.592a1 1 0 0 1-1.659.753"/></svg>Back to Main Page</div></a></h5>'
             else:
-                category_html += f'          <h5 style="margin-left: 20px;color: #3f248d;" class="text-wrap w-100"><a class="category_link" href="./{category}.html">{' '.join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'
+                category_html += f'          <h5 style="margin-left: 20px;color: #3f248d;" class="text-wrap w-100"><a class="category_link" href="./{category}.html">{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'
         category_html += '        </div>\n'
         #main body of html page for flagged strings
         category_html += '        <div class="container-fluid p-0 h-100">\n'\
@@ -285,7 +285,7 @@ def generate_html_table(data, icons, directory):
             for sub_category, files in data[current_category].items():
                 category_html += '                      <div class="accordion-item">\n'
                 category_html += f'                         <h2 class="accordion-header" id="sub-heading{sub_category.replace(" ", "")}">\n'
-                category_html += f'                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sub-collapse{sub_category.replace(" ", "")}" aria-expanded="false" aria-controls="sub-collapse{sub_category.replace(" ", "")}">{icons[sub_category]}{' '.join(word[0].upper() + word[1:] for word in sub_category.split())}</h2>\n'
+                category_html += f'                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sub-collapse{sub_category.replace(" ", "")}" aria-expanded="false" aria-controls="sub-collapse{sub_category.replace(" ", "")}">{icons[sub_category]}{" ".join(word[0].upper() + word[1:] for word in sub_category.split())}</h2>\n'
                 category_html += f'                         <div id="sub-collapse{sub_category.replace(" ", "")}" class="accordion-collapse collapse" aria-labelledby="sub-heading{sub_category.replace(" ", "")}" data-bs-parent="#accordionPanel">\n'
                 category_html += '                              <div class="accordion-body">\n'
                 category_html += '                                  <div class="container-fluid text-center "><div class="row"><div class="col border py-3">File Name and Line Number</div><div class="col-6 border py-3">Details</div><div class="col border py-3">Legitimate Use</div><div class="col border py-3">Abuse</div></div>\n'
@@ -302,7 +302,7 @@ def generate_html_table(data, icons, directory):
         
         else:
             category_html += '                  <div class="container-fluid text-center "><div class="row"><div class="col border py-3">File Name and Line Number</div><div class="col-6 border py-3">Details</div><div class="col border py-3">Legitimate Use</div><div class="col border py-3">Abuse</div></div>\n'
-            for file_path, list_details in files.items():
+            for file_path, list_details in data[current_category].items():
                 file_name = file_path.split("/")[-1]
                 for detail in list_details:
                     category_html += f'                     <div class="row"><div class="col border py-3" data-bs-toggle="tooltip" data-bs-title="{file_path}" data-bs-placement="right">{file_name}: Line {detail["line number"]}</div><div class="col-6 border py-3">{html.escape(detail["suspicious"])}</div><div class="col border py-3">{detail["legitimate"]}</div><div class="col border py-3">{detail["abuse"]}</div></div>\n'
@@ -314,148 +314,12 @@ def generate_html_table(data, icons, directory):
 
         try:
             output_filename = os.path.join(new_directory_name, f'{current_category}.html')
-            with open(output_filename, 'w+') as flagged:
+            with open(output_filename, 'w+', encoding="utf-8", errors='ignore') as flagged:
                 flagged.write(category_html)
             print(f"Saved output as {output_filename}")
         except:
-            print("error creating flagged_results.html. please check if path is a decompiled apk and try again.")
+            print(f"error creating {current_category}.html. please check if path is a decompiled apk and try again.")
 
-    category_html = '<html><head><title>Flagged Results</title><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous"><script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script></head>'
-    #body creation with h-100 so that border can stretch
-    category_html += '<body class="h-100">\n'
-    category_html += '                  <div class="accordion" id="accordionPanel">\n'
-    for sub_category, files in data["code_apis"].items():
-        category_html += '                      <div class="accordion-item">\n'
-        category_html += f'                         <h2 class="accordion-header" id="sub-heading{sub_category.replace(" ", "")}">\n'
-        category_html += f'                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sub-collapse{sub_category.replace(" ", "")}" aria-expanded="false" aria-controls="sub-collapse{sub_category.replace(" ", "")}">{icons[sub_category]}{' '.join(word[0].upper() + word[1:] for word in sub_category.split())}</h2>\n'
-        category_html += f'                         <div id="sub-collapse{sub_category.replace(" ", "")}" class="accordion-collapse collapse" aria-labelledby="sub-heading{sub_category.replace(" ", "")}" data-bs-parent="#accordionPanel">\n'
-        category_html += '                              <div class="accordion-body">\n'
-        category_html += '                                  <div class="container-fluid text-center "><div class="row"><div class="col border py-3">File Name and Line Number</div><div class="col-6 border py-3">Details</div><div class="col border py-3">Legitimate Use</div><div class="col border py-3">Abuse</div></div>\n'
-        for file_path, list_details in files.items():
-            file_name = file_path.split("/")[-1]
-            for detail in list_details:
-                category_html += f'                                 <div class="row"><div class="col border py-3" data-bs-toggle="tooltip" data-bs-title="{file_path}" data-bs-placement="right">{file_name}: Line {detail["line number"]}</div><div class="col-6 border py-3">{html.escape(detail["suspicious"])}</div ><div class="col border py-3">{detail["legitimate"]}</div><div class="col border py-3s">{detail["abuse"]}</div></div>\n'
-        category_html += '                                  </div>\n'
-        category_html += '                              </div>\n'
-        category_html += '                          </div>\n'
-        category_html += '                      </div>\n'
-    category_html += '                  </div>\n'
-    
-    category_html += "<script>let tooltipelements = document.querySelectorAll(\"[data-bs-toggle='tooltip']\");tooltipelements.forEach((el) => {new bootstrap.Tooltip(el);});</script>\n"
-    category_html += '</body>'
-
-    try:
-        output_filename = os.path.join(new_directory_name, 'try.html')
-        with open(output_filename, 'w+') as flagged:
-            flagged.write(category_html)
-        print(f"Saved output as {output_filename}")
-    except:
-        print("error creating flagged_results.html. please check if path is a decompiled apk and try again.")
-
-    
-    '''
-    main_html = '<html><head><title>Flagged Results</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous"><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script></head>'
-    main_html += '<body style="background-color:#010811;color: #fdfffc;">'
-    main_html += '\n<div class="container-fluid border border-white d-flex rounded mt-2 p-2 justify-content-around">'
-    main_html += '<div class="d-flex justify-content-start align-items-center w-50"><img alt="My Image" src="./malwhere.png" />'
-
-    main_html += '<h2 class="m-4">FYP Group 6</h2></div><div class="d-flex align-items-center justify-content-around pt-2">'
-    main_html += f'<div class="container"><h3 class="text-start">Package name:</h3><h3 class="text-start">File size:</h3><h3 class="text-start">MD5:</h3></div>'
-    
-    main_html += '<div class="container">'
-    main_html += f'<h3>{content["package name"]}</h3><h3>{content["file_size"]}MB</h3><h3>{content["MD5"]}</h3></div></div></div></div>'
-
-    
-    main_html+= '<div class="container text-center mt-2">'
-    main_html +='<h1>Flagged Strings Categories</h1>'
-    main_html += '<div class="row">'
-    for category, files in data.items():
-        
-        main_html +=f'<div class="col-6 my-5"><a href="./{category}.html" class="btn btn-outline-danger btn-lg"><div class="d-flex align-items-center">{icons[category]}{' '.join(word[0].upper() + word[1:] for word in category.split())}</div></a></div>'
-    main_html+= '</div>'
-    main_html+= '</div>'
-
-    main_html += '</body></html>'
-
-    try:
-        output_filename = os.path.join(new_directory_name, f'main.html')
-        with open(output_filename, 'w+') as flagged:
-            flagged.write(main_html)
-        print(f"Saved output as {output_filename}")
-    except:
-        print("error creating flagged_results.html. please check if path is a decompiled apk and try again.")
-    
-    
-    #repeated section 
-    for category, files in data.items():
-        #list of booleans to detect if the 
-        empty = []
-        category_html = '<html><head><title>Flagged Results</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous"><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script></head>'
-        
-        #body
-        category_html += '<body style="background-color:#010811;color: #fdfffc;">'
-        category_html += ' <div class="container-fluid mt-3"><div class="text-left"><a href="./main.html" class="btn btn-outline-danger btn-lg"><div class=" d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-caret-left" viewBox="0 0 16 16"><path d="M10 12.796V3.204L4.519 8zm-.659.753-5.48-4.796a1 1 0 0 1 0-1.506l5.48-4.796A1 1 0 0 1 11 3.204v9.592a1 1 0 0 1-1.659.753"/></svg>Back to Main Page</div></a></div>\n'
-        category_html+= f'  <h1 class="text-center mt-5">{category}</h1>\n'
-        if (category == "code_apis"):
-            category_html += '   <div class="accordion container-fluid" id="accordionPanel">\n'
-            for sub_category, files in data[category].items():
-                #check if row is empty
-                if (len(files) == 0):
-                    empty.append(True)
-                else:
-                    empty.append(False)
-                #use accordians in due to subcategories
-                category_html += '    <div class="accordion-item">\n'
-                category_html += f'     <h2 class="accordion-header" id="sub-heading{sub_category.replace(" ", "")}">\n'
-                category_html += f'     <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#sub-collapse{sub_category.replace(" ", "")}" aria-expanded="false" aria-controls="collapse{sub_category.replace(" ", "")}">{icons[sub_category]}{' '.join(word[0].upper() + word[1:] for word in sub_category.split())}</h2>\n'
-                category_html += f'     <div id="sub-collapse{sub_category.replace(" ", "")}" class="accordion-collapse collapse" aria-labelledby="sub-heading{sub_category.replace(" ", "")}" data-bs-parent="#sub-accordion{category.replace(" ", "")}">\n'
-                category_html += '      <div class="accordion-body bg-dark">\n'
-                category_html += '       <div class="container-fluid text-center text-white"><div class="row"><div class="col border border-white py-3">File Name and Line Number</div><div class="col-6 border border-white py-3">Details</div><div class="col border border-white py-3">Legitimate Use</div><div class="col border border-white py-3">Abuse</div></div>\n'
-                #go through the flagged strings
-                for file_path, list_details in files.items():
-                    file_name = file_path.split("/")[-1]
-                    for detail in list_details:
-                        category_html += f'        <div class="row"><div class="col border border-white py-3" data-bs-toggle="tooltip" data-bs-title="{file_path}" data-bs-placement="right">{file_name}: Line {detail["line number"]}</div><div class="col-6 border border-white py-3">{html.escape(detail["suspicious"])}</div ><div class="col border border-white py-3">{detail["legitimate"]}</div><div class="col border border-white py-3s">{detail["abuse"]}</div></div>\n'
-                category_html += '       </div>\n'
-                category_html += '      </div>\n'
-                category_html += '     </div>\n'
-                category_html += '    </div>\n'
-            #for accordian container-fluid
-            category_html += '   </div>\n'
-            category_html += "<script>let tooltipelements = document.querySelectorAll(\"[data-bs-toggle='tooltip']\");tooltipelements.forEach((el) => {new bootstrap.Tooltip(el);});</script>"
-            category_html += '<style>.accordion {--bs-accordion-btn-color: #fdfffc;--bs-accordion-btn-bg:  #2a2a2a;--bs-accordion-active-color: #8ccd00;--bs-accordion-active-bg: #2a2a2a;} .accordion-button:after {background: #2a2a2a;} .accordion-button:not(.collapsed):focus {background: #2a2a2a; color:#fdfffc;}</style>'
-                
-        else:
-            if (len(files) == 0):
-                empty.append(True)
-            else:
-                empty.append(False)
-            
-            if (category == "permissions"):
-                category_html += '\t\t\t\t\t\t<div class="container-fluid text-center text-white m-1"><div class="row"><div class="col border border-white py-3">Line Number</div><div class="col-6 border border-white py-3">Details</div><div class="col border border-white py-3">Legitimate Use</div><div class="col border border-white py-3">Abuse</div></div>\n'
-                for file_path, list_details in files.items():
-                    for detail in list_details:
-                        category_html += f'\t\t\t\t\t\t<div class="row"><div class="col border border-white py-3">{detail["line number"]}</div><div class="col-6 border border-white py-3"">{html.escape(detail["suspicious"])}</div><div class="col border border-white py-3"">{detail["legitimate"]}</div><div class="col border border-white py-3"">{detail["abuse"]}</div></div>'
-            else:
-                category_html += '\t\t\t\t\t\t<div class="container-fluid text-center text-white"><div class="row"><div class="col border border-white py-3">File Name and Line Number</div><div class="col-6 border border-white py-3">Details</div><div class="col border border-white py-3">Legitimate Use</div><div class="col border border-white py-3">Abuse</div></div>\n'
-                
-                for file_path, list_details in files.items():
-                    file_name = file_path.split("/")[-1]
-                    for detail in list_details:
-                        category_html += f'\t\t\t\t\t\t<div class="row"><div class="col border border-white py-3" data-bs-toggle="tooltip" data-bs-title="{file_path}" data-bs-placement="right">{file_name}: Line {detail["line number"]}</div><div class="col-6 border border-white py-3">{html.escape(detail["suspicious"])}</div><div class="col border border-white py-3">{detail["legitimate"]}</div><div class="col border border-white py-3">{detail["abuse"]}</div></div>\n'
-                category_html += "<script>let tooltipelements = document.querySelectorAll(\"[data-bs-toggle='tooltip']\");tooltipelements.forEach((el) => {new bootstrap.Tooltip(el);});</script>"
-            category_html += '\t\t\t\t\t\t</div>\n'
-        category_html += '</body></div">'
-        if (all(empty)):
-            print(f"Error: No strings found in {category}. Please check if path is a decompiled apk and try again.")
-        try:
-            output_filename = os.path.join(new_directory_name, f'{category}.html')
-            with open(output_filename, 'w+') as flagged:
-                flagged.write(category_html)
-            print(f"Saved output as {output_filename}")
-        except:
-            print("error creating flagged_results.html. please check if path is a decompiled apk and try again.")
-        '''
 
 
     
