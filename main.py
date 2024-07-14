@@ -249,7 +249,11 @@ def generate_html_table(data, icons, directory):
         '    text-decoration-color: #ffffff;\n'\
         '    cursor:pointer;\n'\
         '}\n'\
+        '.break-all {\n'\
+        '   word-break:break-all;\n'\
+        '}\n'\
         '</style>\n'
+
         #main containers
         category_html += '    <div class="container-fluid d-flex align-items-start p-0 h-100">\n'
         category_html += '        <div style="width:300px;color: #3f248d;" class="border-end h-100">\n'
@@ -288,11 +292,11 @@ def generate_html_table(data, icons, directory):
                 category_html += f'                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sub-collapse{sub_category.replace(" ", "")}" aria-expanded="false" aria-controls="sub-collapse{sub_category.replace(" ", "")}">{icons[sub_category]}{" ".join(word[0].upper() + word[1:] for word in sub_category.split())}</h2>\n'
                 category_html += f'                         <div id="sub-collapse{sub_category.replace(" ", "")}" class="accordion-collapse collapse" aria-labelledby="sub-heading{sub_category.replace(" ", "")}" data-bs-parent="#accordionPanel">\n'
                 category_html += '                              <div class="accordion-body">\n'
-                category_html += '                                  <div class="container-fluid text-center "><div class="row"><div class="col border py-3">File Name and Line Number</div><div class="col-6 border py-3">Details</div><div class="col border py-3">Legitimate Use</div><div class="col border py-3">Abuse</div></div>\n'
+                category_html += '                                  <div class="container-fluid text-center "><div class="row"><div class="col-2 border py-3 break-all">File Name and Line Number</div><div class="col-6 border py-3 break-all">Details</div><div class="col-2 border py-3 break-all">Legitimate Use</div><div class="col-2 border py-3 break-all">Abuse</div></div>\n'
                 for file_path, list_details in files.items():
-                    file_name = file_path.split("/")[-1]
+                    file_name = Path(file_path).name
                     for detail in list_details:
-                        category_html += f'                                 <div class="row"><div class="col border py-3" data-bs-toggle="tooltip" data-bs-title="{file_path}" data-bs-placement="right">{file_name}: Line {detail["line number"]}</div><div class="col-6 border py-3">{html.escape(detail["suspicious"])}</div ><div class="col border py-3">{detail["legitimate"]}</div><div class="col border py-3s">{detail["abuse"]}</div></div>\n'
+                        category_html += f'                                 <div class="row"><div class="col-2 border py-3 break-all" data-bs-toggle="tooltip" data-bs-title="{file_path}" data-bs-placement="right">{file_name}: Line {detail["line number"]}</div><div class="col-6 border py-3 break-all">{html.escape(detail["suspicious"])}</div ><div class="col-2 border py-3 break-all">{detail["legitimate"]}</div><div class="col-2 border py-3 break-all">{detail["abuse"]}</div></div>\n'
                 category_html += '                                  </div>\n'
                 category_html += '                              </div>\n'
                 category_html += '                          </div>\n'
@@ -301,11 +305,11 @@ def generate_html_table(data, icons, directory):
             #category_html += '                  <style>.accordion {--bs-accordion-btn-color: #ffffff;--bs-accordion-btn-bg:  #ffffff;--bs-accordion-active-color: #8ccd00;--bs-accordion-active-bg: #2a2a2a;} .accordion-button:after {background: #2a2a2a;} .accordion-button:not(.collapsed):focus {background: #2a2a2a; color:#fdfffc;}</style>\n'
         
         else:
-            category_html += '                  <div class="container-fluid text-center "><div class="row"><div class="col border py-3">File Name and Line Number</div><div class="col-6 border py-3">Details</div><div class="col border py-3">Legitimate Use</div><div class="col border py-3">Abuse</div></div>\n'
+            category_html += '                  <div class="container-fluid text-center "><div class="row"><div class="col-2 border py-3 break-all">File Name and Line Number</div><div class="col-6 border py-3 break-all">Details</div><div class="col-2 border py-3 break-all">Legitimate Use</div><div class="col-2 border py-3 break-all">Abuse</div></div>\n'
             for file_path, list_details in data[current_category].items():
-                file_name = file_path.split("/")[-1]
+                file_name = Path(file_path).name
                 for detail in list_details:
-                    category_html += f'                     <div class="row"><div class="col border py-3" data-bs-toggle="tooltip" data-bs-title="{file_path}" data-bs-placement="right">{file_name}: Line {detail["line number"]}</div><div class="col-6 border py-3">{html.escape(detail["suspicious"])}</div><div class="col border py-3">{detail["legitimate"]}</div><div class="col border py-3">{detail["abuse"]}</div></div>\n'
+                    category_html += f'                     <div class="row"><div class="col-2 border py-3 break-all" data-bs-toggle="tooltip" data-bs-title="{file_path}" data-bs-placement="right">{file_name}: Line {detail["line number"]}</div><div class="col-6 border py-3 break-all">{html.escape(detail["suspicious"])}</div><div class="col-2 border py-3 break-all">{detail["legitimate"]}</div><div class="col-2 border py-3 break-all">{detail["abuse"]}</div></div>\n'
             category_html += '                  </div>\n'
 
         category_html += '    </div>\n'
