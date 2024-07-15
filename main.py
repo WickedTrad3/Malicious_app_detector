@@ -15,6 +15,7 @@ import base64
 import html
 import time
 import shutil
+import math
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # def get_current_time():
@@ -89,7 +90,14 @@ def json_create(new_directory_path):
 
 def decompile(apk_path, cwd, method, outputpath):
     if outputpath is None:
-        outputpath = cwd
+            outputpath = cwd
+    if (Path(outputpath).is_dir()):
+        pass
+    else:
+        print("Error: Output folder '"+args.output+"' not found. Please check the folder and try again.")
+        return
+    
+    
     if sys.platform == "linux" or sys.platform == "linux2":
         process = subprocess.Popen([os.path.normpath(cwd + "/decompile.sh"), apk_path, outputpath, method], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()  # Wait for process to complete.
@@ -98,36 +106,35 @@ def decompile(apk_path, cwd, method, outputpath):
         process = subprocess.Popen([os.path.normpath(cwd + "/decompile.bat"), apk_path, outputpath, method], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         # process = subprocess.Popen([os.path.normpath(cwd + "decompile.bat"), directory], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait()  # Wait for process to complete.
-    try:
-        with open(apk_path, "rb") as file:
+    #try:
+    print(apk_path)
+    with open(apk_path, "rb") as file:
+        content = file.read()
+        
+        digest = hashlib.md5(content)
+        #content = content.decode('utf-8', errors='ignore')
+    if (method == "java"):
+        with open(Path(outputpath+"/jadx_decompiled/resources/AndroidManifest.xml"), "r", encoding="utf-8") as file:
             content = file.read()
-            content = content.decode('utf-8', errors='ignore')
-            digest = hashlib.file_digest(file, "md5")
-        if (method == "java"):
-            with open(outputpath+"/jadx_decompiled/resources/AndroidManifest.xml", "r", encoding="utf-8") as file:
-                content = file.read()
-            outputpath = outputpath+"/jadx_decompiled/"
-        elif (method == "smali"):
-            with open(outputpath+"/apktool_decompiled/AndroidManifest.xml", "r", encoding="utf-8") as file:
-                content = file.read()
-            outputpath = os.path.abspath(outputpath,"/apktool_decompiled/")
-        package_name = re.findall(r'(package=\")(.*?)(\")', content)[0][1]
-        stat = {
-            "File Size": os.stat(apk_path).st_size/1000000,
-            "MD5": digest.hexdigest(),
-            "Package Name": package_name
-        }
-        outputpath = os.path.abspath(outputpath)
-        if (method == "java"):
-        #change to include apktool_decompiled/jadx_decompiled folder
-            with open(outputpath+"/file_stat.json", 'w') as outfile:
-                json.dump(stat, outfile, indent=1)
-        else:
-            with open(outputpath+"/file_stat.json", 'w') as outfile:
-                json.dump(stat, outfile, indent=1)
-        print(f"Decompilation of {apk_path} complete. File metadata is stored inside {outputpath}")
-    except:
-        print(f'Error: Output folder "{outputpath}" cannot be written into. Please check the folder and try again.')
+        outputpath = outputpath+"/jadx_decompiled/"
+    elif (method == "smali"):
+        with open(Path(outputpath+"/apktool_decompiled/AndroidManifest.xml"), "r", encoding="utf-8") as file:
+            content = file.read()
+        outputpath = outputpath+"/apktool_decompiled/"
+    package_name = re.findall(r'(package=\")(.*?)(\")', content)[0][1]
+    #os.stat.st_size gives size of file in bytes, so conversion to megabytes is needed
+    #times by 100 to make math.floor round down to nearest integer, then divide back by 100 to get back the original file size, rounded down by 2 decimal places
+    stat = {
+        "File Size": math.floor(os.stat(apk_path).st_size/1000000 * 100)/100,
+        "MD5": digest.hexdigest(),
+        "Package Name": package_name
+    }
+    outputpath = Path(outputpath)
+    with open(outputpath / "file_stat.json", 'w') as outfile:
+            json.dump(stat, outfile, indent=1)
+    print(f"Decompilation of {apk_path} complete. File metadata is stored inside {outputpath.resolve()}")
+    #except:
+        #print(f'Error: Output folder "{outputpath}" cannot be written into. Please check if folder exists or permissions have been given to write into it and try again.')
 
 def generate_html_table(data, icons, directory):
     
@@ -524,7 +531,7 @@ if __name__ == "__main__":
 
     parser_decompile = subparsers.add_parser('decompile', help='Decompile help')
     parser_decompile.add_argument('decompile_method', help='decompilation method between java and smali', choices=('java', 'smali'))
-    parser_decompile.add_argument('-o', '--output', help='output directory for decompiled source code', type=str)
+    parser_decompile.add_argument('-o', '--output', help='output directory for decompiled source code to be written into in either /jadx_decompiled or /apktool_decompiled, depending on the option specified. If not specified, the source code is written into the current working directory', type=str)
     parser_decompile.add_argument("path", help="full path of the apk", type=str)
 
     parser_analysis = subparsers.add_parser('analysis', help='Analysis help')
@@ -541,6 +548,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     cwd = os.path.dirname(__file__)
+    print(args)
     non_verbose_mode = True
     # if not os.path.exists(args.path):
     #     print("Error: Folder/File '"+args.path+"' not found. Please check the path and try again.")
@@ -553,15 +561,8 @@ if __name__ == "__main__":
     # new_directory_name = time.strftime("%H-%M-%S-%d-%m-%Y")
 
     if args.subcommand == "decompile":
-        dir_available = True
-        try:
-            if (not Path(args.output).is_dir()):
-                dir_available = False
-                print("Error: Output folder '"+args.output+"' not found. Please check the folder and try again.")
-        except:
-            if (args.output != None):
-                dir_available = False
-        if (os.path.isfile(args.path) and args.path.split(".")[-1] == "apk" and dir_available):
+        
+        if (os.path.isfile(args.path) and args.path.split(".")[-1] == "apk"):
             decompile(args.path, cwd, args.decompile_method, args.output)
         
         else:
@@ -615,7 +616,7 @@ if __name__ == "__main__":
         json_create(new_directory_path)
         json_update(output, new_directory_path)
         try:
-            with open("./icons/icons.json") as icons_json:
+            with open(Path("./icons/icons.json")) as icons_json:
                 icons = json.load(icons_json)
             
         except:
