@@ -128,5 +128,70 @@
         "suspicious": "android.permission.READ_EXTERNAL_STORAGE",
         "legitimate": "Allows an application to read from external storage.",
         "abuse": "App may be reading data from external storage for data theft or manipulation"
+    },
+    {
+        "suspicious": "android.permission.ACCESS_NOTIFICATION_POLICY",
+        "legitimate": "Allows an application to access notification settings.",
+        "abuse": "App may be disabling notifications"
+    },
+    {
+        "suspicious": "android.permission.CHANGE_WIFI_STATE",
+        "legitimate": "Allows applications to change Wi-Fi connectivity state.",
+        "abuse": "App may be changing Wi-Fi settings to connect to malicious networks"
+    },
+    {
+        "suspicious": "android.permission.CHANGE_NETWORK_STATE",
+        "legitimate": "Allows applications to change network connectivity state, e.g. enabling/disabling airplane mode.",
+        "abuse": "App may be changing network settings to disable network connectivity"
+    },
+    {
+        "suspicious": "android.permission.MANAGE_EXTERNAL_STORAGE",
+        "legitimate": "Allows an application to modify or delete the contents of an external storage.",
+        "abuse": "App may be modifying or deleting data from external storage for data theft or manipulation"
+    },
+    {
+        "suspicious": "android.permission.CLEAR_APP_CACHE",
+        "legitimate": "Allows an application to clear the caches of all installed applications on the device.",
+        "abuse": "App may be clearing app caches to delete traces of malicious activity"
+    },
+    {
+        "suspicious": "android.permission.FOREGROUND_SERVICE",
+        "legitimate": "Allows an application to use Service.startForeground to run a foreground service.",
+        "abuse": "App may be running a foreground service to ensure persistence"
+    },
+    {
+        "suspicious": "android.permission.GET_PACKAGE_SIZE",
+        "legitimate": "Allows an application to find out the space used by any package.",
+        "abuse": "App may be checking package sizes for malicious purposes"
+    },
+    {
+        "suspicious": "android.permission.GET_TASKS",
+        "legitimate": "Allows an application to get information about the currently or recently running tasks.",
+        "abuse": "App may be getting information about running tasks for malicious purposes"
+    },
+    {
+        "suspicious": "android.permission.PACKAGE_USAGE_STATS",
+        "legitimate": "Allows an application to collect component usage statistics.",
+        "abuse": "App may be collecting usage statistics for malicious purposes"
+    },
+    {
+        "suspicious": "android.permission.REQUEST_DELETE_PACKAGES",
+        "legitimate": "Allows an application to request deletion of packages.",
+        "abuse": "App may be deleting packages for malicious purposes"
+    },
+    {
+        "suspicious": "android.permission.REQUEST_INSTALL_PACKAGES",
+        "legitimate": "Allows an application to request installation packages.",
+        "abuse": "App may be installing packages for malicious purposes"
+    },
+    {
+        "suspicious": "android.permission.WRITE_SETTINGS",
+        "legitimate": "Allows an application to read or write the system settings.",
+        "abuse": "App may be changing system settings to disable security features or enable malicious features"
+    },
+    {
+        "suspicious": "android.permission.WRITE_SYNC_SETTINGS",
+        "legitimate": "Allows applications to write the sync settings, e.g. contacts calendar, email.",
+        "abuse": "App may be changing sync settings to disable security features"
     }
 ]
