@@ -7,7 +7,6 @@ import json
 import argparse
 import sys
 import subprocess
-from prettytable import PrettyTable, MARKDOWN
 import itertools
 import hashlib
 import re
@@ -44,7 +43,7 @@ def check_folders(directory, cwd, options):
             if options[rule_path]:
                 create_output(ruleset, rule_path.split("/")[-1].split(".")[0], output)
         except json.decoder.JSONDecodeError:
-            print(f"Error occurred with {rule_path}")
+            print(f"Error reading {rule_path}, skipping...")
 
     file_paths = []
     for path, folders, files in os.walk(directory):
@@ -70,7 +69,6 @@ def check_folders(directory, cwd, options):
 
     return output
 
-
 def create_output(ruleset, ruleset_name, output):
     output[ruleset_name] = {}
     for pattern in ruleset:
@@ -89,52 +87,63 @@ def json_create(new_directory_path):
         json.dump({}, outfile)
 
 def decompile(apk_path, cwd, method, outputpath):
+    
     if outputpath is None:
             outputpath = cwd
     if (Path(outputpath).is_dir()):
         pass
     else:
-        print("Error: Output folder '"+args.output+"' not found. Please check the folder and try again.")
+        # print("Error: Output folder '"+args.output+"' not found. Please check the folder and try again.")
+        print(f"Error: Output folder '{outputpath}' not found. Please check the folder and try again.")
         return
-    
-    
-    if sys.platform == "linux" or sys.platform == "linux2":
-        process = subprocess.Popen([os.path.normpath(cwd + "/decompile.sh"), apk_path, outputpath, method], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()  # Wait for process to complete.
+    try:
+        if sys.platform == "linux" or sys.platform == "linux2":
+            process = subprocess.Popen([os.path.normpath(cwd + "/decompile.sh"), apk_path, outputpath, method], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process.wait()  # Wait for process to complete.
 
-    elif sys.platform == "win32":
-        process = subprocess.Popen([os.path.normpath(cwd + "/decompile.bat"), apk_path, outputpath, method], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        # process = subprocess.Popen([os.path.normpath(cwd + "decompile.bat"), directory], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        process.wait()  # Wait for process to complete.
-    #try:
-    print(apk_path)
-    with open(apk_path, "rb") as file:
-        content = file.read()
-        
-        digest = hashlib.md5(content)
-        #content = content.decode('utf-8', errors='ignore')
-    if (method == "java"):
-        with open(Path(outputpath+"/jadx_decompiled/resources/AndroidManifest.xml"), "r", encoding="utf-8") as file:
+        elif sys.platform == "win32":
+            process = subprocess.Popen([os.path.normpath(cwd + "/decompile.bat"), apk_path, outputpath, method], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            # process = subprocess.Popen([os.path.normpath(cwd + "decompile.bat"), directory], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process.wait()  # Wait for process to complete.
+        #try:
+        print(apk_path)
+        with open(apk_path, "rb") as file:
             content = file.read()
-        outputpath = outputpath+"/jadx_decompiled/"
-    elif (method == "smali"):
-        with open(Path(outputpath+"/apktool_decompiled/AndroidManifest.xml"), "r", encoding="utf-8") as file:
-            content = file.read()
-        outputpath = outputpath+"/apktool_decompiled/"
-    package_name = re.findall(r'(package=\")(.*?)(\")', content)[0][1]
-    #os.stat.st_size gives size of file in bytes, so conversion to megabytes is needed
-    #times by 100 to make math.floor round down to nearest integer, then divide back by 100 to get back the original file size, rounded down by 2 decimal places
-    stat = {
-        "File Size": math.floor(os.stat(apk_path).st_size/1000000 * 100)/100,
-        "MD5": digest.hexdigest(),
-        "Package Name": package_name
-    }
-    outputpath = Path(outputpath)
-    with open(outputpath / "file_stat.json", 'w') as outfile:
-            json.dump(stat, outfile, indent=1)
-    print(f"Decompilation of {apk_path} complete. File metadata is stored inside {outputpath.resolve()}")
-    #except:
-        #print(f'Error: Output folder "{outputpath}" cannot be written into. Please check if folder exists or permissions have been given to write into it and try again.')
+            
+            digest = hashlib.md5(content)
+            #content = content.decode('utf-8', errors='ignore')
+        if (method == "java"):
+            with open(Path(outputpath+"/jadx_decompiled/resources/AndroidManifest.xml"), "r", encoding="utf-8") as file:
+                content = file.read()
+            outputpath = outputpath+"/jadx_decompiled/"
+        elif (method == "smali"):
+            with open(Path(outputpath+"/apktool_decompiled/AndroidManifest.xml"), "r", encoding="utf-8") as file:
+                content = file.read()
+            outputpath = outputpath+"/apktool_decompiled/"
+        package_name = re.findall(r'(package=\")(.*?)(\")', content)[0][1]
+        #os.stat.st_size gives size of file in bytes, so conversion to megabytes is needed
+        #times by 100 to make math.floor round down to nearest integer, then divide back by 100 to get back the original file size, rounded down by 2 decimal places
+        stat = {
+            "File Size": math.floor(os.stat(apk_path).st_size/1000000 * 100)/100,
+            "MD5": digest.hexdigest(),
+            "Package Name": package_name
+        }
+        outputpath = Path(outputpath)
+        with open(outputpath / "file_stat.json", 'w') as outfile:
+                json.dump(stat, outfile, indent=1)
+        print(f"Decompilation of {apk_path} complete. File metadata is stored inside {outputpath.resolve()}")
+        #except:
+            #print(f'Error: Output folder "{outputpath}" cannot be written into. Please check if folder exists or permissions have been given to write into it and try again.')
+    except FileNotFoundError:
+        print(f"Error: File '{apk_path}' not found. Please check the file path and try again.")
+    except PermissionError:
+        print(f"Error: Permission denied when accessing '{outputpath}'. Please check your permissions and try again.")
+    except KeyboardInterrupt:
+        print(f"Error: Analysis of '{apk_path}' was interrupted.")
+    except MemoryError:
+        print(f"Error: Memory error occurred during decompilation of '{apk_path}'.")
+    except Exception as e:
+        print(f"Error: An unexpected error occurred during decompilation: {str(e)}")
 
 def generate_html_table(data, icons, directory):
     
@@ -231,8 +240,11 @@ def generate_html_table(data, icons, directory):
         with open(output_filename, 'w+', encoding="utf-8", errors='ignore') as flagged:
             flagged.write(main_html)
         print(f"Saved output as {output_filename}")
+
+    except KeyboardInterrupt:
+        print("Error creating main.html. Process cancelled by user.")
     except:
-        print("error creating flagged_results.html. please check if path is a decompiled apk and try again.")
+        print("Error creating flagged_results.html. please check if path is a decompiled apk and try again.")
 
     for current_category, files in data.items():
         #scripts
@@ -329,7 +341,7 @@ def generate_html_table(data, icons, directory):
                 flagged.write(category_html)
             print(f"Saved output as {output_filename}")
         except:
-            print(f"error creating {current_category}.html. please check if path is a decompiled apk and try again.")
+            print(f"Error creating {current_category}.html. please check if path is a decompiled apk and try again.")
 
 
 
@@ -489,12 +501,30 @@ def update_rules():
 
 def analyse_file(file_path, cwd, options, output):
     try:
+        if file_path.split(".")[-1] == "apk":
+            print(f"Error: APK file '{file_path}' detected. Please decompile the APK first before analysis.")
+            return {}
         # print(f"Analysing {file_path}")
         result = rules.scan_file(file_path, cwd, options, output)
         # print(f"Successfully analysed {file_path}")
         return result
+    except FileNotFoundError: 
+        print(f"Error: File '{file_path}' not found. Please check the file path and try again.")
+        return {}
+    except PermissionError:
+        print(f"Error: Permission denied when accessing '{file_path}'. Please check your permissions and try again.")
+        return {}
+    except KeyboardInterrupt:
+        print(f"Error: Analysis of '{file_path}' was interrupted.")
+        return {}
+    except MemoryError:
+        print(f"Error: Memory error occurred during analysis of '{file_path}'.")
+        return {}
+    except UnicodeDecodeError:
+        print(f"Error: Unable to decode '{file_path}'.")
+        return {}
     except Exception as e:
-        print(f"Error in analysing {file_path}: {e}")
+        print(f"Error: An unexpected error occurred while analyzing '{file_path}': {str(e)}")
         return {}
 
 # def analyse_file(file_path, cwd, options, output):
@@ -541,11 +571,10 @@ if __name__ == "__main__":
     parser_analysis.add_argument("-a", "--apis", help="List all APIs used in the APK.", default=False, required=False, action="store_true")
     parser_analysis.add_argument("-i", "--intents", help="List all intents used in the APK.", default=False, required=False, action="store_true")
     parser_analysis.add_argument("-l", "--logging", help="List all logging done in the APK.", default=False, required=False, action="store_true")
-    parser_analysis.add_argument("-e", "--extras", help="List all extras used in the APK.", default=False, required=False, action="store_true")
     parser_analysis.add_argument("path", help="full path of the apk", type=str)
 
     parser_modify_rules = subparsers.add_parser('modify-rules', help='Modify JSON rules')
-    
+
     args = parser.parse_args()
     cwd = os.path.dirname(__file__)
     print(args)
@@ -553,8 +582,9 @@ if __name__ == "__main__":
     # if not os.path.exists(args.path):
     #     print("Error: Folder/File '"+args.path+"' not found. Please check the path and try again.")
     #     sys.exit(1)
+    
     if args.subcommand in ["decompile", "analysis"] and not os.path.exists(args.path):
-        print("Error: Folder/File '"+args.path+"' not found. Please check the path and try again.")
+        print(f"Error: Folder/File '{args.path}' not found. Please check the path and try again.")
         sys.exit(1)
 
     # identifier = get_identifier_from_path(args.path)
@@ -566,7 +596,9 @@ if __name__ == "__main__":
             decompile(args.path, cwd, args.decompile_method, args.output)
         
         else:
-            print("Error: File '"+args.path+"' not found. Please check the filename and try again.")
+            # print("Error: File '"+args.path+"' not found. Please check the filename and try again.")
+            print(f"Error: File '{args.path}' is not a valid APK file. Please check the filename and try again.")
+
     elif args.subcommand == "analysis":
         if args.very_verbose:
             options = {
@@ -601,7 +633,6 @@ if __name__ == "__main__":
             "code_apis": "This looks at different classes and methods commonly employed by APKs for activities such as sideloading and downloading external files.",
             "intents": "Intents allow the APK to both listen for intents broadcasted by other apps to hijack, as well as send their own intents to perform unauthorized actions.",
             "logging": "Logging of actions taken by the user or collection of sensitive logged data is dangerous",
-            "extras": "Contains rules not fit for their own sections. Some rules look at identifying apps employing obfuscation methods to hide malicous methods for analysis as well as policies employed in older Android versions."
         }
 
         # identifier = get_identifier_from_path(directory)
@@ -620,7 +651,7 @@ if __name__ == "__main__":
                 icons = json.load(icons_json)
             
         except:
-            print("error loading icons.json. Please check the file and ensure it is correct")
+            print("Error loading icons.json. Please check the file and ensure it is correct")
         generate_html_table(output, icons,args.path)
     elif args.subcommand == "modify-rules":
         update_rules()
