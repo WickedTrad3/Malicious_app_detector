@@ -16,6 +16,7 @@ import time
 import shutil
 import math
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import matplotlib.pyplot as plt
 
 # def get_current_time():
 #     return time.strftime("%H-%M-%S-%d-%m-%Y")
@@ -145,6 +146,52 @@ def decompile(apk_path, cwd, method, outputpath):
     except Exception as e:
         print(f"Error: An unexpected error occurred during decompilation: {str(e)}")
 
+def create_pie_chart(output_directory, data):
+    count_per_outer = []
+    count_per_inner = []
+    inner_label = []
+    outer_label = []
+    sub_category_label = []
+    for category, files in data.items():
+        inner_label.append(category)
+        outer_label.append(category)
+        if category == "code_apis":
+            outer_label.pop()
+            
+            count_per_inner.append(0)
+            for sub_category, files in data[category].items():
+                outer_label.append(sub_category)
+                
+                count_per_outer.append(0)
+                for file in files:
+                    count_per_outer[-1] += len(file)
+                    count_per_inner[-1] +=len(file)
+        else:
+            count_per_outer.append(0)
+            count_per_inner.append(0)
+            for file in files:
+                count_per_outer[-1] += len(file)
+                count_per_inner[-1] += len(file)
+                
+    fig, ax = plt.subplots()
+    patches, texts1  = plt.pie(count_per_outer,labels=outer_label, pctdistance=0.8, radius=1)
+
+    
+    patches, texts2 = plt.pie(count_per_inner,labels=inner_label, pctdistance=0.8, radius=1 - 0.3)
+    my_circle=plt.Circle((0,0), 0.4, color='#fefce8')
+    
+    plt.gca().axis("equal")
+    # Adding Circle in Pie chart
+    fig.gca().add_artist(my_circle)
+    new_label = [f'{l}, {s:0.1f}%' for l, s in zip(outer_label, count_per_outer)]
+    ax.legend(labels = new_label, bbox_to_anchor=(1.5,0.5), loc="center right", frameon=False, bbox_transform=plt.gcf().transFigure)
+    for t in texts1:
+        t.remove()
+    for t in texts2:
+        t.remove()
+    plt.savefig(output_directory / "piechart.png", bbox_inches="tight",facecolor='#fefce8')
+
+            
 
 def generate_html_categories(data, icons, content, current_category, time_of_analysis):
     #scripts
@@ -178,7 +225,7 @@ def generate_html_categories(data, icons, content, current_category, time_of_ana
     category_html += '        <div style="width:400px;color: #3f248d;" class="container-fluid border-end h-100">\n'
     
     #Logo
-    category_html += '          <div class="container pt-2 d-flex">\n'\
+    category_html += '          <div class="container py-3 d-flex">\n'\
                     '              <img style="width: 30px;height: 30px;" src="./malwhere.png">'\
                     '              <h6>MalWhere</h6>'\
                     '          </div>'
@@ -188,7 +235,7 @@ def generate_html_categories(data, icons, content, current_category, time_of_ana
     for key,value in content.items():
         category_html += f'          <div class="row"><div class="col-4 border border-4"><h6>{" ".join(word[0].upper() + word[1:] for word in key.split())}: </h6></div><div class="col-8 border border-4"><h6 class="break-all" style="color: #3f248d;">{value}</h6></div></div>\n'
     #added time of analysis
-    category_html +=f'           <div class="row"><div class="col-4 border border-4"><h6>Time Of Analysis: </h6></div><div class="col-8 border border-4"><h6 class="break-all" style="color: #3f248d;">{time_of_analysis}</h6></div></div>\n'
+    category_html +=f'           <div class="row pb-2"><div class="col-4 border border-4"><h6>Time Of Analysis: </h6></div><div class="col-8 border border-4"><h6 class="break-all" style="color: #3f248d;">{time_of_analysis}</h6></div></div>\n'
     #category links
     #category_html += '          <div class="d-flex align-items-center lead"><hr width="20px" size="5"><h6>Category</h6></div>'
     #generate category links
@@ -298,7 +345,7 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     #metadata
     main_html +='       <div style="width:400px;" class="container-fluid border-end h-100">\n'
     #logo and name of application
-    main_html +='           <div class="container pt-2 d-flex">\n'\
+    main_html +='           <div class="container py-3 d-flex">\n'\
                 '               <img style="width: 30px;height: 30px;" src="./malwhere.png">\n'\
                 '               <h6>MalWhere</h6>\n'\
                 '           </div>\n'
@@ -308,11 +355,11 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     for key,value in content.items():
         main_html +=f'           <div class="row"><div class="col-4 border border-4"><h6>{" ".join(word[0].upper() + word[1:] for word in key.split())}: </h6></div><div class="col-8 border-4 border"><h6 class="break-all" style="color: #3f248d;">{value}</h6></div></div>\n'
     #added time of analysis
-    main_html +=f'           <div class="row"><div class="col-4 border border-4"><h6>Time Of Analysis: </h6></div><div class="col-8 border border-4"><h6 class="break-all" style="color: #3f248d;">{time_of_analysis}</h6></div></div>\n'
+    main_html +=f'           <div class="row pb-2"><div class="col-4 border border-4"><h6>Time Of Analysis: </h6></div><div class="col-8 border border-4"><h6 class="break-all" style="color: #3f248d;">{time_of_analysis}</h6></div></div>\n'
     #category links
     #main_html +='           <h5 class="d-flex align-items-center lead"><hr width="20px" size="5">Category Links</h5>\n'
     for category, files in data.items():
-        main_html +=f'           <h5 style="margin-left: 20px;color: #3f248d;" class="text-wrap w-100"><a class="category_link" href="./{category}.html">{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'
+        main_html +=f'           <h5 style="margin-left: 20px;color: #3f248d;" class="text-wrap w-100"><a class="category_link" href="./{category}.html">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'
     main_html +='       </div>\n'
 
     #main section with FYP group number and grid for cards
@@ -322,6 +369,15 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
                 '               <div class="container-fluid ms-0 px-3">\n'\
                 '               <h1 class="py-2 px-4">Categories</h1>\n'\
                 '                   <div class="row row-cols-3 g-4">'
+    #create card for pie chart
+    main_html +='                   <div class="col">\n'\
+                '                       <div class="card category_card" style="height: 400px;">\n'\
+                '                           <div class="card-body h-100">\n'\
+                f'                              <h5 class="card-title" style="color: #3f248d;">Pie Chart of Categories</h5>\n'\
+                f'                               <img class="img-fluid h-100" src="{output_directory / "piechart.png"}">\n'\
+                '                           </div>\n'\
+                '                       </div>\n'\
+                '                   </div>'
     #create cards for categories
     for category, files in data.items():
         main_html +='                   <div class="col">\n'\
@@ -623,18 +679,16 @@ if __name__ == "__main__":
                 "./rules/code_apis.json":True,
                 "./rules/intents.json":True,
                 "./rules/logging.json":True,
-                "./rules/extras.json":True,
             }
             output = check_folders(args.path, cwd, options)
             non_verbose_mode = False
-        elif non_verbose_mode and (args.permissions or args.urls or args.apis or args.intents or args.logging or args.extras):
+        elif non_verbose_mode and (args.permissions or args.urls or args.apis or args.intents or args.logging):
             options = {
                 "./rules/permissions.json":args.permissions,
                 "./rules/url.json":args.urls,
                 "./rules/code_apis.json":args.apis,
                 "./rules/intents.json":args.intents,
                 "./rules/logging.json":args.logging,
-                "./rules/extras.json":args.extras,
             }
             output = check_folders(args.path, cwd, options)
         else:
@@ -666,5 +720,6 @@ if __name__ == "__main__":
         except:
             print("error loading icons.json. Please check the file and ensure it is correct")
         generate_html_table(output, icons,args.path, new_directory_path, time_of_analysis)
+        create_pie_chart(new_directory_path, output)
     elif args.subcommand == "modify-rules":
         update_rules()
