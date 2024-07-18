@@ -1,6 +1,7 @@
 #! /bin/bash
-echo "enter apk path to decompile:"
-read apk
 
-./jadx/bin/jadx.bat --output-dir ./ $apk
-./apktool/apktool d $apk
+if [ $3 == "java" ]
+then
+./jadx/bin/jadx $1 --output-dir $2/jadx_decompiled
+else
+./apktool/apktool d $1 -o $2/apktool_decompiled
