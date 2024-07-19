@@ -17,6 +17,7 @@ import shutil
 import math
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches 
 
 # def get_current_time():
 #     return time.strftime("%H-%M-%S-%d-%m-%Y")
@@ -147,48 +148,66 @@ def decompile(apk_path, cwd, method, outputpath):
         print(f"Error: An unexpected error occurred during decompilation: {str(e)}")
 
 def create_pie_chart(output_directory, data):
-    count_per_outer = []
-    count_per_inner = []
-    inner_label = []
-    outer_label = []
-    sub_category_label = []
+    sub_categories_apis_numbers = []
+    main_catergories_numbers = []
+    main_categories_label = []
+    #outer_label = []
+    sub_category_apis_label = []
     for category, files in data.items():
-        inner_label.append(category)
-        outer_label.append(category)
+        main_categories_label.append(category)
+        #outer_label.append(category)
         if category == "code_apis":
-            outer_label.pop()
+            #outer_label.pop()
             
-            count_per_inner.append(0)
+            main_catergories_numbers.append(0)
             for sub_category, files in data[category].items():
-                outer_label.append(sub_category)
+                sub_category_apis_label.append(sub_category)
                 
-                count_per_outer.append(0)
+                sub_categories_apis_numbers.append(0)
                 for file in files:
-                    count_per_outer[-1] += len(file)
-                    count_per_inner[-1] +=len(file)
+                    sub_categories_apis_numbers[-1] += len(file)
+                    main_catergories_numbers[-1] +=len(file)
         else:
-            count_per_outer.append(0)
-            count_per_inner.append(0)
+            #count_per_outer.append(0)
+            main_catergories_numbers.append(0)
             for file in files:
-                count_per_outer[-1] += len(file)
-                count_per_inner[-1] += len(file)
+                #count_per_outer[-1] += len(file)
+                main_catergories_numbers[-1] += len(file)
                 
     fig, ax = plt.subplots()
-    patches, texts1  = plt.pie(count_per_outer,labels=outer_label, pctdistance=0.8, radius=1)
+    #patches, texts1  = plt.pie(count_per_outer,labels=outer_label, pctdistance=0.8, radius=1)
 
     
-    patches, texts2 = plt.pie(count_per_inner,labels=inner_label, pctdistance=0.8, radius=1 - 0.3)
+    #patches, texts2 = plt.pie(count_per_inner,labels=inner_label, pctdistance=0.8, radius=1 - 0.3)
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][:len(main_categories_label)]
+    patches, texts2 = plt.pie(main_catergories_numbers, colors=colors,labels=main_categories_label, radius=1)
     my_circle=plt.Circle((0,0), 0.4, color='#fefce8')
     
     plt.gca().axis("equal")
     # Adding Circle in Pie chart
     fig.gca().add_artist(my_circle)
-    new_label = [f'{l}, {s:0.1f}%' for l, s in zip(outer_label, count_per_outer)]
-    ax.legend(labels = new_label, bbox_to_anchor=(1.5,0.5), loc="center right", frameon=False, bbox_transform=plt.gcf().transFigure)
-    for t in texts1:
-        t.remove()
+    res=[]
+    sum_of_main_categories = sum(main_catergories_numbers)
+    new_code_apis_label = [f'{l}, {s/sum_of_main_categories*100:0.1f}%' for l, s in zip(sub_category_apis_label, sub_categories_apis_numbers)]
+    lines = []
+    
+    main_categories_label_percent = [f'{l}, {s/sum_of_main_categories*100:0.1f}%' for l, s in zip(main_categories_label, main_catergories_numbers)]
+    #legend_label = []
+    index=0
+
+    for c in colors:
+        #legend_label.append(main_categories_label_percent[index])
+        lines.append(mpatches.Patch(color=c, label=main_categories_label_percent[index]))
+        if (main_categories_label[index] == "code_apis"):
+            #legend_label.extend(new_code_apis_label)
+            lines.extend([mpatches.Patch(color="none", label=sub_label) for sub_label in new_code_apis_label])
+        index+=1
+    ax.legend(handles= lines, bbox_to_anchor=(1.5,0.5), loc="center right", frameon=False, bbox_transform=plt.gcf().transFigure)
+    #for t in texts1:
+        #t.remove()
     for t in texts2:
         t.remove()
+    
     plt.savefig(output_directory / "piechart.png", bbox_inches="tight",facecolor='#fefce8')
 
             
