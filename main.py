@@ -18,6 +18,8 @@ import math
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches 
+import matplotlib.colors as mcolors
+import seaborn as sns
 
 # def get_current_time():
 #     return time.strftime("%H-%M-%S-%d-%m-%Y")
@@ -108,7 +110,6 @@ def decompile(apk_path, cwd, method, outputpath):
             # process = subprocess.Popen([os.path.normpath(cwd + "decompile.bat"), directory], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process.wait()  # Wait for process to complete.
         #try:
-        print(apk_path)
         with open(apk_path, "rb") as file:
             content = file.read()
             
@@ -179,30 +180,40 @@ def create_pie_chart(output_directory, data):
 
     
     #patches, texts2 = plt.pie(count_per_inner,labels=inner_label, pctdistance=0.8, radius=1 - 0.3)
-    colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][:len(main_categories_label)]
-    patches, texts2 = plt.pie(main_catergories_numbers, colors=colors,labels=main_categories_label, radius=1)
+    #colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][:len(main_categories_label)]
+    
+    color_map = sns.color_palette("flare", as_cmap=True)
+    colors =[color_map(i / len(main_categories_label)) for i in range(len(main_categories_label))]
+    colors.reverse()
+    patches, texts2 = plt.pie(main_catergories_numbers, colors=colors[:len(main_categories_label)],labels=main_categories_label, radius=1)
     my_circle=plt.Circle((0,0), 0.4, color='#fefce8')
     
+    #twilight_shifted
+    #autumn
+    #cool
+    #winter
+    #prism
     plt.gca().axis("equal")
     # Adding Circle in Pie chart
     fig.gca().add_artist(my_circle)
     res=[]
     sum_of_main_categories = sum(main_catergories_numbers)
-    new_code_apis_label = [f'{l}, {s/sum_of_main_categories*100:0.1f}%' for l, s in zip(sub_category_apis_label, sub_categories_apis_numbers)]
+    new_code_apis_label = [f'{" ".join(word[0].upper() + word[1:] for word in l.split())}, {s/sum_of_main_categories*100:0.1f}%' for l, s in zip(sub_category_apis_label, sub_categories_apis_numbers)]
     lines = []
     
-    main_categories_label_percent = [f'{l}, {s/sum_of_main_categories*100:0.1f}%' for l, s in zip(main_categories_label, main_catergories_numbers)]
+    main_categories_label_percent = [f'{" ".join(word[0].upper() + word[1:] for word in l.split())}, {s/sum_of_main_categories*100:0.1f}%' for l, s in zip(main_categories_label, main_catergories_numbers)]
     #legend_label = []
     index=0
 
-    for c in colors:
+    for main_category in main_categories_label_percent:
         #legend_label.append(main_categories_label_percent[index])
-        lines.append(mpatches.Patch(color=c, label=main_categories_label_percent[index]))
+        lines.append(mpatches.Patch(color=colors[index], label=main_category))
         if (main_categories_label[index] == "code_apis"):
             #legend_label.extend(new_code_apis_label)
-            lines.extend([mpatches.Patch(color="none", label=sub_label) for sub_label in new_code_apis_label])
+            lines.extend([mpatches.Patch(color="none", label=sub_label + ' (fs=12)', linewidth=2.0) for sub_label in new_code_apis_label])
         index+=1
-    ax.legend(handles= lines, bbox_to_anchor=(1.5,0.5), loc="center right", frameon=False, bbox_transform=plt.gcf().transFigure)
+        
+    ax.legend(handles= lines, bbox_to_anchor=(1.5,0.5), loc="right", frameon=False, bbox_transform=plt.gcf().transFigure)
     #for t in texts1:
         #t.remove()
     for t in texts2:
@@ -241,33 +252,34 @@ def generate_html_categories(data, icons, content, current_category, time_of_ana
 
     #main containers
     category_html += '    <div class="container-fluid d-flex align-items-start p-0 h-100">\n'
-    category_html += '        <div style="width:400px;color: #3f248d;" class="container-fluid border-end h-100">\n'
+    category_html += '       <div style="width:400px;" class="container-fluid  d-flex h-100 flex-column justify-content-between">\n'
     
-    #Logo
-    category_html += '          <div class="container py-3 d-flex">\n'\
-                    '              <img style="width: 30px;height: 30px;" src="./malwhere.png">'\
-                    '              <h6>MalWhere</h6>'\
-                    '          </div>'
-    
-    #category_html += '          <div class="d-flex align-items-center lead"><h6>MetaData</h6></div>\n'
-    #generate metadata
-    for key,value in content.items():
-        category_html += f'          <div class="row"><div class="col-4 border border-4"><h6>{" ".join(word[0].upper() + word[1:] for word in key.split())}: </h6></div><div class="col-8 border border-4"><h6 class="break-all" style="color: #3f248d;">{value}</h6></div></div>\n'
-    #added time of analysis
-    category_html +=f'           <div class="row pb-2"><div class="col-4 border border-4"><h6>Time Of Analysis: </h6></div><div class="col-8 border border-4"><h6 class="break-all" style="color: #3f248d;">{time_of_analysis}</h6></div></div>\n'
-    #category links
-    #category_html += '          <div class="d-flex align-items-center lead"><hr width="20px" size="5"><h6>Category</h6></div>'
+    category_html +='           <div><div class="container py-3 d-flex">\n'\
+                '               <img style="width: 50px;height: 50;" src="./malwhere.png">\n'\
+                '               <h2>MalWhere</h2></div>\n'
     #generate category links
     for category, files in data.items():
         #if current category place link back to main page 
         if (category == current_category):
-            category_html += '          <h6 style="margin-left: 5px;color: #3f248d;" class="break-all w-100"><a class="category_link" href="./main.html"><div class=" d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left" viewBox="0 0 16 16"><path d="M10 12.796V3.204L4.519 8zm-.659.753-5.48-4.796a1 1 0 0 1 0-1.506l5.48-4.796A1 1 0 0 1 11 3.204v9.592a1 1 0 0 1-1.659.753"/></svg>Back to Main Page</div></a></h6>'
+            category_html += '          <h5 style="margin-left: 5px;color: #3f248d;" class="break-all w-100"><a class="category_link" href="./main.html"><div class=" d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left" viewBox="0 0 16 16"><path d="M10 12.796V3.204L4.519 8zm-.659.753-5.48-4.796a1 1 0 0 1 0-1.506l5.48-4.796A1 1 0 0 1 11 3.204v9.592a1 1 0 0 1-1.659.753"/></svg>Back to Main Page</div></a></h5>'
         else:
-            category_html += f'          <h6 style="margin-left: 20px;color: #3f248d;" class="break-all w-100"><a class="category_link" href="./{category}.html">{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h6>\n'
+            category_html += f'          <h5 style="margin-left: 20px;color: #3f248d;" class="break-all w-100"><a class="category_link" href="./{category}.html">{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'
     category_html += '        </div>\n'
+                
+    
+    #main_html +='           <h5 class="d-flex align-items-center lead"><hr width="20px" size="5">MetaData</h5>\n'
+    #metadata information
+    #added time of analysis
+    category_html+= '<div class="container-fluid py-2">'
+    category_html +=f'           <div class="row"><div class="col-4 border border-4"><h6>Time Of Analysis: </h6></div><div class="col-8 border border-4"><h6 class="break-all" style="color: #3f248d;">{time_of_analysis}</h6></div></div>\n'
+    
+    for key,value in content.items():
+        category_html +=f'           <div class="row"><div class="col-4 border border-4"><h6>{" ".join(word[0].upper() + word[1:] for word in key.split())}: </h6></div><div class="col-8 border-4 border"><h6 class="break-all" style="color: #3f248d;">{value}</h6></div></div>\n'
+    category_html+='</div></div>\n'
+    
+    
     #main body of html page for flagged strings
-    category_html += '        <div class="container-fluid p-0 h-100">\n'\
-                        '          <h1 class="p-2 mb-0 border-bottom">FYP Group 6</h1>\n'\
+    category_html += '        <div class="container-fluid px-0 py-2 h-100">\n'\
                         '          <div style="background-color:#f8fafc;" class="ps-1 h-100">\n'\
                         '              <div style="max-width: 2000px;" class="container-fluid ms-0">\n'\
                         f'                  <h1 class="py-2 px-4">{current_category}</h1>\n'
@@ -305,7 +317,7 @@ def generate_html_categories(data, icons, content, current_category, time_of_ana
     category_html += '</body>'
     return category_html
 
-def generate_html_table(data, icons, directory, output_directory, time_of_analysis):
+def generate_html_table(data, icons, directory, output_directory, time_of_analysis, description_categories):
     
     #check for file meta data
     try:
@@ -323,8 +335,8 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     main_html = '<html><head><title>Flagged Results</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous"><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h555rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script></head>'
     #body creation with h-100 so that border can stretch
     main_html+='<body class="h-100">\n'
-    
-    #styles for main page
+    main_html+='<link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/rabbid-highway-sign-ii" type="text/css"/>'
+    #styles for main page'       <div style="width:400px;" class="container-fluid  d-flex h-100 flex-column justify-content-between">\n'
     main_html+='<style>\n'\
     '.card{\n'\
     '   border-radius: 4px;\n'\
@@ -334,7 +346,6 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     '   padding: 14px 80px 18px 36px;\n'\
     '   cursor: pointer;\n'\
     'border-width: 5px;\n'\
-    'border-color: #fee8b5;\n'\
     '}\n'\
     '.card:hover{\n'\
     '    transform: scale(1.05);\n'\
@@ -350,6 +361,7 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     '}\n'\
     '.category_link:hover {\n'\
     '    color:#696cff;\n'\
+    '    background-color:#e0dced;\n'\
     '    text-decoration-color: #ffffff;\n'\
     '    cursor:pointer;\n'\
     '}\n'\
@@ -362,38 +374,41 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     main_html +='   <div class="container-fluid d-flex align-items-start p-0 h-100">\n'
     
     #metadata
-    main_html +='       <div style="width:400px;" class="container-fluid border-end h-100">\n'
+    main_html +='       <div style="width:400px;" class="container-fluid  d-flex h-100 flex-column justify-content-between">\n'
     #logo and name of application
-    main_html +='           <div class="container py-3 d-flex">\n'\
-                '               <img style="width: 30px;height: 30px;" src="./malwhere.png">\n'\
-                '               <h6>MalWhere</h6>\n'\
-                '           </div>\n'
-                
-    #main_html +='           <h5 class="d-flex align-items-center lead"><hr width="20px" size="5">MetaData</h5>\n'
-    #metadata information
-    for key,value in content.items():
-        main_html +=f'           <div class="row"><div class="col-4 border border-4"><h6>{" ".join(word[0].upper() + word[1:] for word in key.split())}: </h6></div><div class="col-8 border-4 border"><h6 class="break-all" style="color: #3f248d;">{value}</h6></div></div>\n'
-    #added time of analysis
-    main_html +=f'           <div class="row pb-2"><div class="col-4 border border-4"><h6>Time Of Analysis: </h6></div><div class="col-8 border border-4"><h6 class="break-all" style="color: #3f248d;">{time_of_analysis}</h6></div></div>\n'
+    main_html +='           <div><div class="container py-3 d-flex">\n'\
+                '               <img style="width: 50px;height: 50;" src="./malwhere.png">\n'\
+                '               <h2>MalWhere</h2></div>\n'
     #category links
     #main_html +='           <h5 class="d-flex align-items-center lead"><hr width="20px" size="5">Category Links</h5>\n'
     for category, files in data.items():
         main_html +=f'           <h5 style="margin-left: 20px;color: #3f248d;" class="text-wrap w-100"><a class="category_link" href="./{category}.html">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'
     main_html +='       </div>\n'
+                
+    
+    #main_html +='           <h5 class="d-flex align-items-center lead"><hr width="20px" size="5">MetaData</h5>\n'
+    #metadata information
+    #added time of analysis
+    main_html+= '<div class="container-fluid py-2">'
+    main_html +=f'           <div class="row"><div class="col-4 border border-4"><h6>Time Of Analysis: </h6></div><div class="col-8 border border-4"><h6 class="break-all" style="color: #3f248d;">{time_of_analysis}</h6></div></div>\n'
+    
+    for key,value in content.items():
+        main_html +=f'           <div class="row"><div class="col-4 border border-4"><h6>{" ".join(word[0].upper() + word[1:] for word in key.split())}: </h6></div><div class="col-8 border-4 border"><h6 class="break-all" style="color: #3f248d;">{value}</h6></div></div>\n'
+    main_html+='</div></div>\n'
+    
 
     #main section with FYP group number and grid for cards
-    main_html +='       <div class="container-fluid p-0 h-100">\n'\
-                '           <h1 class="p-2 mb-0 border-bottom">FYP Group 6</h1>\n'\
-                '           <div style="background-color:#f8fafc;" class="p-0 h-100">\n'\
-                '               <div class="container-fluid ms-0 px-3">\n'\
-                '               <h1 class="py-2 px-4">Categories</h1>\n'\
-                '                   <div class="row row-cols-3 g-4">'
+    main_html +='       <div class="container-fluid p-0 h-100 border-start">\n'\
+                '           <div style="background-color:#f8fafc;" class="px-0 h-100 pt-4">\n'\
+                '               <div class="container-fluid ms-0 px-3">\n'
+                #'               <h1 class="py-2 px-4">Categories</h1>\n'\
+    main_html +='                   <div class="row row-cols-3 g-4">'
     #create card for pie chart
     main_html +='                   <div class="col">\n'\
-                '                       <div class="card category_card" style="height: 400px;">\n'\
-                '                           <div class="card-body h-100">\n'\
-                f'                              <h5 class="card-title" style="color: #3f248d;">Pie Chart of Categories</h5>\n'\
-                f'                               <img class="img-fluid h-100" src="{output_directory / "piechart.png"}">\n'\
+                '                       <div class="card category_card px-0" style="height: 400px;">\n'\
+                '                           <div class="card-body px-0 h-100">\n'\
+                f'                              <h5 class="card-title px-5" style="color: #3f248d;">{icons[category]}Pie Chart of Categories</h5>\n'\
+                f'                               <img class="img-fluid" src="{output_directory / "piechart.png"}">\n'\
                 '                           </div>\n'\
                 '                       </div>\n'\
                 '                   </div>'
@@ -403,8 +418,8 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
                     '                       <div class="card category_card" style="height: 400px;">\n'\
                     '                           <div class="card-body">\n'\
                     f'                              <h5 class="card-title" style="color: #3f248d;">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</h5>\n'\
-                    '                               <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card\'s content.</p>\n'\
-                    f'                               <a href="./{category}.html" class="btn btn-primary stretched-link">Go somewhere</a>\n'\
+                    f'                               <p class="card-text">{description_categories[category]}</p>\n'\
+                    f'                               <a href="./{category}.html" class="btn btn-primary stretched-link" hidden></a>\n'\
                     '                           </div>\n'\
                     '                       </div>\n'\
                     '                   </div>'
@@ -667,7 +682,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     cwd = os.path.dirname(__file__)
-    print(args)
     non_verbose_mode = True
     # if not os.path.exists(args.path):
     #     print("Error: Folder/File '"+args.path+"' not found. Please check the path and try again.")
@@ -738,7 +752,7 @@ if __name__ == "__main__":
             
         except:
             print("error loading icons.json. Please check the file and ensure it is correct")
-        generate_html_table(output, icons,args.path, new_directory_path, time_of_analysis)
+        generate_html_table(output, icons,args.path, new_directory_path, time_of_analysis, description_categories)
         create_pie_chart(new_directory_path, output)
     elif args.subcommand == "modify-rules":
         update_rules()
