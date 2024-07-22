@@ -9,10 +9,10 @@ import fileinput
 
 
 def flag_suspicious_patterns(content, ruleset, ruleset_name, output, file_path):
-    if (ruleset_name !="code_apis" and file_path not in output[ruleset_name]):
+    if (ruleset_name !="code apis" and file_path not in output[ruleset_name]):
         output[ruleset_name][file_path] = []
     for pattern in ruleset:
-        if (ruleset_name =="code_apis" and file_path not in output[ruleset_name][pattern["category"]]):
+        if (ruleset_name =="code apis" and file_path not in output[ruleset_name][pattern["category"]]):
             output[ruleset_name][pattern["category"]][file_path] = []
         for match in re.finditer("(?<=\\n)[^\\n]*"+pattern["suspicious"]+"[^\\n]*(?=\\n)", content, re.I):
             line = content[match.start():content.find('\n', match.start())]
@@ -26,7 +26,7 @@ def flag_suspicious_patterns(content, ruleset, ruleset_name, output, file_path):
                     "abuse": pattern.get("abuse", "")
                 })
 
-            elif (ruleset_name =="code_apis"):
+            elif (ruleset_name =="code apis"):
                 output[ruleset_name][pattern["category"]][file_path].append({
                     "line number": line_number,
                     "suspicious": line,
@@ -42,11 +42,11 @@ def flag_suspicious_patterns(content, ruleset, ruleset_name, output, file_path):
                     "abuse": pattern.get("abuse", "")
                 })
 
-        if (ruleset_name == "code_apis"):
+        if (ruleset_name == "code apis"):
             if (len(output[ruleset_name][pattern["category"]][file_path]) == 0):
                 output[ruleset_name][pattern["category"]].pop(file_path)
 
-    if (ruleset_name != "code_apis" ):
+    if (ruleset_name != "code apis" ):
         if (len(output[ruleset_name][file_path]) == 0):
             output[ruleset_name].pop(file_path)
 

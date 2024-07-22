@@ -76,8 +76,9 @@ def check_folders(directory, cwd, options):
 def create_output(ruleset, ruleset_name, output):
     output[ruleset_name] = {}
     for pattern in ruleset:
-        if (ruleset_name =="code_apis"):
+        if (ruleset_name =="code apis"):
             output[ruleset_name][pattern["category"]] = {}
+
     return output
 
 def json_update(output, new_directory_path):
@@ -164,7 +165,7 @@ def create_pie_chart(output_directory, data):
     for category, files in data.items():
         main_categories_label.append(category)
         #outer_label.append(category)
-        if category == "code_apis":
+        if category == "code apis":
             #outer_label.pop()
             
             main_catergories_numbers.append(0)
@@ -183,44 +184,42 @@ def create_pie_chart(output_directory, data):
                 main_catergories_numbers[-1] += len(file)
                 
     fig, ax = plt.subplots()
-    #patches, texts1  = plt.pie(count_per_outer,labels=outer_label, pctdistance=0.8, radius=1)
-
-    
-    #patches, texts2 = plt.pie(count_per_inner,labels=inner_label, pctdistance=0.8, radius=1 - 0.3)
-    #colors = plt.rcParams['axes.prop_cycle'].by_key()['color'][:len(main_categories_label)]
     
     color_map = sns.color_palette("flare", as_cmap=True)
     colors =[color_map(i / len(main_categories_label)) for i in range(len(main_categories_label))]
     colors.reverse()
     patches, texts2 = plt.pie(main_catergories_numbers, colors=colors[:len(main_categories_label)],labels=main_categories_label, radius=1)
     my_circle=plt.Circle((0,0), 0.4, color='#fefce8')
-    
-    #twilight_shifted
-    #autumn
-    #cool
-    #winter
-    #prism
+
     plt.gca().axis("equal")
     # Adding Circle in Pie chart
     fig.gca().add_artist(my_circle)
-    res=[]
     sum_of_main_categories = sum(main_catergories_numbers)
-    new_code_apis_label = [f'{" ".join(word[0].upper() + word[1:] for word in l.split())}, {s/sum_of_main_categories*100:0.1f}%' for l, s in zip(sub_category_apis_label, sub_categories_apis_numbers)]
-    lines = []
     
-    main_categories_label_percent = [f'{" ".join(word[0].upper() + word[1:] for word in l.split())}, {s/sum_of_main_categories*100:0.1f}%' for l, s in zip(main_categories_label, main_catergories_numbers)]
-    #legend_label = []
+    new_code_apis_label = [f'{" ".join(word[0].upper() + word[1:] for word in l.split())}, {s/sum_of_main_categories*100:0.2f}%' for l, s in zip(sub_category_apis_label, sub_categories_apis_numbers)]
+    main_categories_label_percent = [f'{" ".join(word[0].upper() + word[1:] for word in l.split())}, {s/sum_of_main_categories*100:0.2f}%' for l, s in zip(main_categories_label, main_catergories_numbers)]
+    
+    lines = []
     index=0
 
     for main_category in main_categories_label_percent:
         #legend_label.append(main_categories_label_percent[index])
         lines.append(mpatches.Patch(color=colors[index], label=main_category))
-        if (main_categories_label[index] == "code_apis"):
+        if (main_categories_label[index] == "code apis"):
             #legend_label.extend(new_code_apis_label)
-            lines.extend([mpatches.Patch(color="none", label=sub_label + ' (fs=12)', linewidth=2.0) for sub_label in new_code_apis_label])
+            lines.extend([mpatches.Patch(color="none", label=sub_label, linewidth=3.0) for sub_label in new_code_apis_label])
         index+=1
         
-    ax.legend(handles= lines, bbox_to_anchor=(1.5,0.5), loc="right", frameon=False, bbox_transform=plt.gcf().transFigure)
+    
+        
+    leg =ax.legend(handles= lines, bbox_to_anchor=(1.5,0.5), loc="right", frameon=False, bbox_transform=plt.gcf().transFigure)
+    leg_list = [text for text in leg.get_texts()]
+    for leg in leg_list:
+        if leg.get_text() not in main_categories_label_percent:
+            leg.set_fontsize('small')
+        else:
+           leg.set_fontsize('large') 
+
     #for t in texts1:
         #t.remove()
     for t in texts2:
@@ -247,30 +246,33 @@ def generate_html_categories(data, icons, content, current_category, time_of_ana
     '   transition: .2s;\n'\
     '   text-decoration:none;\n'\
     '}\n'\
-    '.category_link:hover {\n'\
+    '.break-all {\n'\
+    '   word-break:break-all;\n'\
+    '}\n'\
+    '.cat_link:hover{\n'\
     '    color:#696cff;\n'\
     '    text-decoration-color: #ffffff;\n'\
     '    cursor:pointer;\n'\
-    '}\n'\
-    '.break-all {\n'\
-    '   word-break:break-all;\n'\
+    '   background-color: #e0dced;\n'\
+    '   transition: background-color 1s;\n'\
+    '   background-color: #e0dced;\n'\
     '}\n'\
     '</style>\n'
 
     #main containers
     category_html += '    <div class="container-fluid d-flex align-items-start p-0 h-100">\n'
-    category_html += '       <div style="width:400px;" class="container-fluid  d-flex h-100 flex-column justify-content-between">\n'
+    category_html += '       <div style="width:400px;" class="container-fluid d-flex h-100 p-0 flex-column justify-content-between">\n'
     
-    category_html +='           <div><div class="container py-3 d-flex">\n'\
+    category_html +='           <div class="px-2"><div class="container py-3 d-flex">\n'\
                 '               <img style="width: 50px;height: 50;" src="./malwhere.png">\n'\
                 '               <h2>MalWhere</h2></div>\n'
     #generate category links
     for category, files in data.items():
         #if current category place link back to main page 
         if (category == current_category):
-            category_html += '          <h5 style="margin-left: 5px;color: #3f248d;" class="break-all w-100"><a class="category_link" href="./main.html"><div class=" d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left" viewBox="0 0 16 16"><path d="M10 12.796V3.204L4.519 8zm-.659.753-5.48-4.796a1 1 0 0 1 0-1.506l5.48-4.796A1 1 0 0 1 11 3.204v9.592a1 1 0 0 1-1.659.753"/></svg>Back to Main Page</div></a></h5>'
+            category_html += '          <h5 style="margin-left: 5px;color: #3f248d;" class="break-all py-2 cat_link"><a class="category_link" href="./main.html"><div class=" d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left" viewBox="0 0 16 16"><path d="M10 12.796V3.204L4.519 8zm-.659.753-5.48-4.796a1 1 0 0 1 0-1.506l5.48-4.796A1 1 0 0 1 11 3.204v9.592a1 1 0 0 1-1.659.753"/></svg>Back to Main Page</div></a></h5>'
         else:
-            category_html += f'          <h5 style="margin-left: 20px;color: #3f248d;" class="break-all w-100"><a class="category_link" href="./{category}.html">{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'
+            category_html += f'          <h5 style="margin-left: 20px;color: #3f248d;" class="break-all py-2 cat_link"><a class="category_link" href="./{category}.html">{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'
     category_html += '        </div>\n'
                 
     
@@ -291,7 +293,7 @@ def generate_html_categories(data, icons, content, current_category, time_of_ana
                         '              <div style="max-width: 2000px;" class="container-fluid ms-0">\n'\
                         f'                  <h1 class="py-2 px-4">{current_category}</h1>\n'
 
-    if (current_category == "code_apis"):
+    if (current_category == "code apis"):
         category_html += '                  <div class="accordion" id="accordionPanel">\n'
         for sub_category, files in data[current_category].items():
             category_html += '                      <div class="accordion-item">\n'
@@ -366,11 +368,13 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     '   transition: .2s;\n'\
     '   text-decoration: none;\n'\
     '}\n'\
-    '.category_link:hover {\n'\
+    '.cat_link:hover{\n'\
     '    color:#696cff;\n'\
-    '    background-color:#e0dced;\n'\
     '    text-decoration-color: #ffffff;\n'\
-    '    cursor:pointer;\n'\
+    '    cursor:poinGenerating main html pageter;\n'\
+    '   background-color: #e0dced;\n'\
+    'transition: background-color 1s;\n'\
+    '   background-color: #e0dced;\n'\
     '}\n'\
     '.break-all {\n'\
     '   word-break:break-all;\n'\
@@ -381,22 +385,22 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     main_html +='   <div class="container-fluid d-flex align-items-start p-0 h-100">\n'
     
     #metadata
-    main_html +='       <div style="width:400px;" class="container-fluid  d-flex h-100 flex-column justify-content-between">\n'
+    main_html +='       <div style="width:400px;" class="container-fluid d-flex h-100 p-0 flex-column justify-content-between">\n'
     #logo and name of application
-    main_html +='           <div><div class="container py-3 d-flex">\n'\
+    main_html +='           <div class="px-2"><div class="container py-3 d-flex">\n'\
                 '               <img style="width: 50px;height: 50;" src="./malwhere.png">\n'\
                 '               <h2>MalWhere</h2></div>\n'
     #category links
     #main_html +='           <h5 class="d-flex align-items-center lead"><hr width="20px" size="5">Category Links</h5>\n'
     for category, files in data.items():
-        main_html +=f'           <h5 style="margin-left: 20px;color: #3f248d;" class="text-wrap w-100"><a class="category_link" href="./{category}.html">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'
+        main_html +=f'           <h5 style="margin-left: 20px;color: #3f248d;" class="text-wrap py-2 cat_link"><a class="category_link" href="./{category}.html">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'
     main_html +='       </div>\n'
                 
     
     #main_html +='           <h5 class="d-flex align-items-center lead"><hr width="20px" size="5">MetaData</h5>\n'
     #metadata information
     #added time of analysis
-    main_html+= '<div class="container-fluid py-2">'
+    main_html+= '<div class="container-fluid py-2" style="border-color:#3f248d;">'
     main_html +=f'           <div class="row"><div class="col-4 border border-4"><h6>Time Of Analysis: </h6></div><div class="col-8 border border-4"><h6 class="break-all" style="color: #3f248d;">{time_of_analysis}</h6></div></div>\n'
     
     for key,value in content.items():
@@ -409,7 +413,7 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
                 '           <div style="background-color:#f8fafc;" class="px-0 h-100 pt-4">\n'\
                 '               <div class="container-fluid ms-0 px-3">\n'
                 #'               <h1 class="py-2 px-4">Categories</h1>\n'\
-    main_html +='                   <div class="row row-cols-3 g-4">'
+    main_html +='                   <div class="row row-cols-3 g-4 pt-5">'
     #create card for pie chart
     main_html +='                   <div class="col">\n'\
                 '                       <div class="card category_card px-0" style="height: 400px;">\n'\
@@ -424,9 +428,8 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
         main_html +='                   <div class="col">\n'\
                     '                       <div class="card category_card" style="height: 400px;">\n'\
                     '                           <div class="card-body">\n'\
-                    f'                              <h5 class="card-title" style="color: #3f248d;">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</h5>\n'\
+                    f'                              <h5 class="card-title" style="color: #3f248d;">a href="./{category}.html" class="btn btn-outline-info rounded stretched-link">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'\
                     f'                               <p class="card-text">{description_categories[category]}</p>\n'\
-                    f'                               <a href="./{category}.html" class="btn btn-primary stretched-link" hidden></a>\n'\
                     '                           </div>\n'\
                     '                       </div>\n'\
                     '                   </div>'
@@ -482,7 +485,7 @@ def add_new_rule(file_path):
     legitimate = input("Enter the legitimate reasoning: ").strip()
     abuse = input("Enter the potential abuse: ").strip()
     
-    if os.path.basename(file_path) == "code_apis.json":
+    if os.path.basename(file_path) == "code apis.json":
         categories = get_categories(file_path)
         print("Choose the category for the new rule:")
         for idx, category in enumerate(categories, start=1):
@@ -542,7 +545,7 @@ def modify_rule(file_path):
         legitimate = input("Enter the new legitimate reasoning (leave blank to keep current): ").strip()
         abuse = input("Enter the new potential abuse (leave blank to keep current): ").strip()
         
-        if os.path.basename(file_path) == "code_apis.json":
+        if os.path.basename(file_path) == "code apis.json":
             categories = get_categories(file_path)
             print("Choose a new category (leave blank to keep current):")
             for idx, category in enumerate(categories, start=1):
@@ -716,7 +719,7 @@ if __name__ == "__main__":
             options = {
                 "./rules/permissions.json":True,
                 "./rules/url.json":True,
-                "./rules/code_apis.json":True,
+                "./rules/code apis.json":True,
                 "./rules/intents.json":True,
                 "./rules/logging.json":True,
             }
@@ -726,7 +729,7 @@ if __name__ == "__main__":
             options = {
                 "./rules/permissions.json":args.permissions,
                 "./rules/url.json":args.urls,
-                "./rules/code_apis.json":args.apis,
+                "./rules/code apis.json":args.apis,
                 "./rules/intents.json":args.intents,
                 "./rules/logging.json":args.logging,
             }
@@ -737,7 +740,7 @@ if __name__ == "__main__":
         description_categories = {
             "permissions": "Permissions that can be used for malicious activities. Permissions are required for most malicious activities, as most malicious APKs require some level of privilege to carry out their functions.",
             "url": "Urls can point to external servers that are being used as Command-and-Control servers or databases for malicious activities to exfiltrate data and receive information.",
-            "code_apis": "This looks at different classes and methods commonly employed by APKs for activities such as sideloading and downloading external files.",
+            "code apis": "This looks at different classes and methods commonly employed by APKs for activities such as sideloading and downloading external files.",
             "intents": "Intents allow the APK to both listen for intents broadcasted by other apps to hijack, as well as send their own intents to perform unauthorized actions.",
             "logging": "Logging of actions taken by the user or collection of sensitive logged data is dangerous",
         }
