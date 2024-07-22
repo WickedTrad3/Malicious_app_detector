@@ -100,6 +100,13 @@ def decompile(apk_path, cwd, method, outputpath):
         # print("Error: Output folder '"+args.output+"' not found. Please check the folder and try again.")
         print(f"Error: Output folder '{outputpath}' not found. Please check the folder and try again.")
         return
+
+    if method == "java" and not os.path.isfile(os.path.join(cwd, "jadx/bin/jadx")):
+        print("Error: JADX not found. Please check the path and try again.")
+        return
+    elif method == "smali" and not os.path.isfile(os.path.join(cwd, "apktool/apktool")):
+        print("Error: APKTool not found. Please check the path and try again.")
+        return
     try:
         if sys.platform == "linux" or sys.platform == "linux2":
             process = subprocess.Popen([os.path.normpath(cwd + "/decompile.sh"), apk_path, outputpath, method], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
