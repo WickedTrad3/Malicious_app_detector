@@ -249,13 +249,13 @@ def generate_html_categories(data, icons, content, current_category, time_of_ana
     '.break-all {\n'\
     '   word-break:break-all;\n'\
     '}\n'\
+    '.cat_link{text-decoration: none;}'\
     '.cat_link:hover{\n'\
     '    color:#696cff;\n'\
     '    text-decoration-color: #ffffff;\n'\
     '    cursor:pointer;\n'\
     '   background-color: #e0dced;\n'\
-    '   transition: background-color 1s;\n'\
-    '   background-color: #e0dced;\n'\
+    '   transition: 1s;\n'\
     '}\n'\
     '</style>\n'
 
@@ -270,9 +270,9 @@ def generate_html_categories(data, icons, content, current_category, time_of_ana
     for category, files in data.items():
         #if current category place link back to main page 
         if (category == current_category):
-            category_html += '          <h5 style="margin-left: 5px;color: #3f248d;" class="break-all py-2 cat_link"><a class="category_link" href="./main.html"><div class=" d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left" viewBox="0 0 16 16"><path d="M10 12.796V3.204L4.519 8zm-.659.753-5.48-4.796a1 1 0 0 1 0-1.506l5.48-4.796A1 1 0 0 1 11 3.204v9.592a1 1 0 0 1-1.659.753"/></svg>Back to Main Page</div></a></h5>'
+            category_html += '          <a class="cat_link" href="./main.html"><h5 style="margin-left: 20px;" class="text-wrap py-2 rounded cat_link category_link"><div class=" d-flex align-items-center"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-caret-left" viewBox="0 0 16 16"><path d="M10 12.796V3.204L4.519 8zm-.659.753-5.48-4.796a1 1 0 0 1 0-1.506l5.48-4.796A1 1 0 0 1 11 3.204v9.592a1 1 0 0 1-1.659.753"/></svg>Back to Main Page</div></h5></a>'
         else:
-            category_html += f'          <h5 style="margin-left: 20px;color: #3f248d;" class="break-all py-2 cat_link"><a class="category_link" href="./{category}.html">{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'
+            category_html += f'          <a class="cat_link" href="./{category}.html"><h5 style="margin-left: 20px;" class="text-wrap py-2 rounded cat_link category_link"><div class=" d-flex align-items-center">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</div></h5></a>\n'
     category_html += '        </div>\n'
                 
     
@@ -288,8 +288,9 @@ def generate_html_categories(data, icons, content, current_category, time_of_ana
     
     
     #main body of html page for flagged strings
-    category_html += '        <div class="container-fluid px-0 py-2 h-100">\n'\
-                        '          <div style="background-color:#f8fafc;" class="ps-1 h-100">\n'\
+    category_html += '       <div class="container-fluid p-0 border-start">\n'\
+                    '       <h2 class="border-bottom p-2 m-0">FYP group 6</h2>'\
+                    '           <div style="background-color:#f8fafc;" class="px-0 pt-4 h-100">\n'\
                         '              <div style="max-width: 2000px;" class="container-fluid ms-0">\n'\
                         f'                  <h1 class="py-2 px-4">{current_category}</h1>\n'
 
@@ -368,13 +369,13 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     '   transition: .2s;\n'\
     '   text-decoration: none;\n'\
     '}\n'\
+    '.cat_link{text-decoration: none;}'\
     '.cat_link:hover{\n'\
     '    color:#696cff;\n'\
     '    text-decoration-color: #ffffff;\n'\
     '    cursor:poinGenerating main html pageter;\n'\
     '   background-color: #e0dced;\n'\
-    'transition: background-color 1s;\n'\
-    '   background-color: #e0dced;\n'\
+    'transition: 1s;\n'\
     '}\n'\
     '.break-all {\n'\
     '   word-break:break-all;\n'\
@@ -393,7 +394,7 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     #category links
     #main_html +='           <h5 class="d-flex align-items-center lead"><hr width="20px" size="5">Category Links</h5>\n'
     for category, files in data.items():
-        main_html +=f'           <h5 style="margin-left: 20px;color: #3f248d;" class="text-wrap py-2 cat_link"><a class="category_link" href="./{category}.html">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'
+        main_html +=f'           <a class="cat_link" href="./{category}.html"><h5 style="margin-left: 20px;" class="text-wrap py-2 rounded cat_link category_link"><div class=" d-flex align-items-center">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</div></h5></a>\n'
     main_html +='       </div>\n'
                 
     
@@ -409,16 +410,17 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     
 
     #main section with FYP group number and grid for cards
-    main_html +='       <div class="container-fluid p-0 h-100 border-start">\n'\
-                '           <div style="background-color:#f8fafc;" class="px-0 h-100 pt-4">\n'\
+    main_html +='       <div class="container-fluid p-0 border-start">\n'\
+                '       <h2 class="border-bottom p-2 m-0">FYP group 6</h2>'\
+                '           <div style="background-color:#f8fafc;" class="px-0 pt-4 h-100">\n'\
                 '               <div class="container-fluid ms-0 px-3">\n'
                 #'               <h1 class="py-2 px-4">Categories</h1>\n'\
     main_html +='                   <div class="row row-cols-3 g-4 pt-5">'
     #create card for pie chart
     main_html +='                   <div class="col">\n'\
-                '                       <div class="card category_card px-0" style="height: 400px;">\n'\
+                '                       <div class="card category_card px-0" style="height:100%;width:100%;">\n'\
                 '                           <div class="card-body px-0 h-100">\n'\
-                f'                              <h5 class="card-title px-5" style="color: #3f248d;">{icons[category]}Pie Chart of Categories</h5>\n'\
+                f'                              <h5 class="card-title px-5"><a href="./" class="border border-2 p-2 rounded-pill" style="text-decoration: none;color: #3f248d;">{icons[category]}Pie Chart of Categories</a></h5>\n'\
                 f'                               <img class="img-fluid" src="{output_directory / "piechart.png"}">\n'\
                 '                           </div>\n'\
                 '                       </div>\n'\
@@ -426,9 +428,9 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     #create cards for categories
     for category, files in data.items():
         main_html +='                   <div class="col">\n'\
-                    '                       <div class="card category_card" style="height: 400px;">\n'\
+                    '                       <div class="card category_card" style="height: 100%;width:100%;">\n'\
                     '                           <div class="card-body">\n'\
-                    f'                              <h5 class="card-title" style="color: #3f248d;">a href="./{category}.html" class="btn btn-outline-info rounded stretched-link">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'\
+                    f'                              <h5 class="card-title"><a href="./{category}.html" class="border border-2 p-2 rounded-pill" style="text-decoration: none;color: #3f248d;">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'\
                     f'                               <p class="card-text">{description_categories[category]}</p>\n'\
                     '                           </div>\n'\
                     '                       </div>\n'\
