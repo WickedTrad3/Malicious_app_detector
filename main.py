@@ -110,8 +110,8 @@ def decompile(apk_path, cwd, method, outputpath):
         return
     try:
         if sys.platform == "linux" or sys.platform == "linux2":
-            process = subprocess.Popen([os.path.normpath(cwd + "/decompile.sh"), apk_path, outputpath, method], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            process.wait()  # Wait for process to complete.
+            
+            proc = subprocess.run([os.path.normpath(cwd + "/decompile.sh"), apk_path, outputpath, method], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         elif sys.platform == "win32":
             process = subprocess.Popen([os.path.normpath(cwd + "/decompile.bat"), apk_path, outputpath, method], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -145,8 +145,8 @@ def decompile(apk_path, cwd, method, outputpath):
         print(f"Decompilation of {apk_path} complete. File metadata is stored inside {outputpath.resolve()}")
         #except:
             #print(f'Error: Output folder "{outputpath}" cannot be written into. Please check if folder exists or permissions have been given to write into it and try again.')
-    except FileNotFoundError:
-        print(f"Error: File '{apk_path}' not found. Please check the file path and try again.")
+    except FileNotFoundError as e:
+        print(f"Error: File '{e}' not found. Please check the file path and try again.")
     except PermissionError:
         print(f"Error: Permission denied when accessing '{outputpath}'. Please check your permissions and try again.")
     except KeyboardInterrupt:
@@ -420,7 +420,7 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     main_html +='                   <div class="col">\n'\
                 '                       <div class="card category_card px-0" style="height:100%;width:100%;">\n'\
                 '                           <div class="card-body px-0 h-100">\n'\
-                f'                              <h5 class="card-title px-5"><a href="./" class="border border-2 p-2 rounded-pill" style="text-decoration: none;color: #3f248d;">{icons[category]}Pie Chart of Categories</a></h5>\n'\
+                f'                              <h5 class="card-title px-5"><a href="./" class="border border-2 py-2 px-3 rounded-pill" style="text-decoration: none;color: #3f248d;border-color:#3f248d !important;">{icons[category]}Pie Chart of Categories</a></h5>\n'\
                 f'                               <img class="img-fluid" src="{output_directory / "piechart.png"}">\n'\
                 '                           </div>\n'\
                 '                       </div>\n'\
@@ -430,8 +430,8 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
         main_html +='                   <div class="col">\n'\
                     '                       <div class="card category_card" style="height: 100%;width:100%;">\n'\
                     '                           <div class="card-body">\n'\
-                    f'                              <h5 class="card-title"><a href="./{category}.html" class="border border-2 p-2 rounded-pill" style="text-decoration: none;color: #3f248d;">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'\
-                    f'                               <p class="card-text">{description_categories[category]}</p>\n'\
+                    f'                              <h5 class="card-title"><a href="./{category}.html" class="border border-2 py-2 px-3 rounded-pill" style="text-decoration: none;color: #3f248d;border-color:#3f248d !important;">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'\
+                    f'                               <p class="card-text pt-2">{description_categories[category]}</p>\n'\
                     '                           </div>\n'\
                     '                       </div>\n'\
                     '                   </div>'
