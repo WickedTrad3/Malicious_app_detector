@@ -2,7 +2,7 @@
 
 # This repository is for a malicious app detector for android.
 
-## tools for download
+## current version of tools used 
 [https://drive.google.com/drive/folders/19G2gweB63v0sfbk5nEfd2tw2sV4dS-rC?usp=drive_link](https://drive.google.com/drive/folders/19G2gweB63v0sfbk5nEfd2tw2sV4dS-rC?usp=drive_link)
 
 ## image for download
