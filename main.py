@@ -48,6 +48,8 @@ def check_folders(directory, cwd, options):
                 create_output(ruleset, rule_path.split("/")[-1].split(".")[0], output)
         except json.decoder.JSONDecodeError:
             print(f"Error reading {rule_path}, skipping...")
+        except KeyError as e:
+            print(f"Error reading {e}, skipping...")
 
     file_paths = []
     for path, folders, files in os.walk(directory):
@@ -146,9 +148,9 @@ def decompile(apk_path, cwd, method, outputpath):
         #except:
             #print(f'Error: Output folder "{outputpath}" cannot be written into. Please check if folder exists or permissions have been given to write into it and try again.')
     except FileNotFoundError as e:
-        print(f"Error: File '{e}' not found. Please check the file path and try again.")
-    except PermissionError:
-        print(f"Error: Permission denied when accessing '{outputpath}'. Please check your permissions and try again.")
+        print(f"Error: File '{str(e)}' not found. Please check the file path and try again.")
+    except PermissionError as e:
+        print(f"Error: Permission denied when accessing '{str(e)}'. Please check your permissions and try again.")
     except KeyboardInterrupt:
         print(f"Error: Analysis of '{apk_path}' was interrupted.")
     except MemoryError:
@@ -264,8 +266,8 @@ def generate_html_categories(data, icons, content, current_category, time_of_ana
     category_html += '       <div style="width:400px;" class="container-fluid d-flex h-100 p-0 flex-column justify-content-between">\n'
     
     category_html +='           <div class="px-2"><div class="container py-3 d-flex">\n'\
-                '               <img style="width: 50px;height: 50;" src="./malwhere.png">\n'\
-                '               <h2>MalWhere</h2></div>\n'
+                '               <img style="width: 60px;height: 50;" src="./Malwhere_logo.png">\n'\
+                '               <h2 class="fw-bold">MalWhere</h2></div>\n'
     #generate category links
     for category, files in data.items():
         #if current category place link back to main page 
@@ -389,8 +391,8 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     main_html +='       <div style="width:400px;" class="container-fluid d-flex h-100 p-0 flex-column justify-content-between">\n'
     #logo and name of application
     main_html +='           <div class="px-2"><div class="container py-3 d-flex">\n'\
-                '               <img style="width: 50px;height: 50;" src="./malwhere.png">\n'\
-                '               <h2>MalWhere</h2></div>\n'
+                '               <img style="width: 60px;height: 50;" src="./Malwhere_logo.png">\n'\
+                '               <h2 class="fw-bold">MalWhere</h2></div>\n'
     #category links
     #main_html +='           <h5 class="d-flex align-items-center lead"><hr width="20px" size="5">Category Links</h5>\n'
     for category, files in data.items():
@@ -625,11 +627,11 @@ def analyse_file(file_path, cwd, options, output):
         result = rules.scan_file(file_path, cwd, options, output)
         # print(f"Successfully analysed {file_path}")
         return result
-    except FileNotFoundError: 
-        print(f"Error: File '{file_path}' not found. Please check the file path and try again.")
+    except FileNotFoundError as e: 
+        print(f"Error: File '{str(e)}' not found. Please check the file path and try again.")
         return {}
-    except PermissionError:
-        print(f"Error: Permission denied when accessing '{file_path}'. Please check your permissions and try again.")
+    except PermissionError as e:
+        print(f"Error: Permission denied when accessing '{str(e)}'. Please check your permissions and try again.")
         return {}
     except KeyboardInterrupt:
         print(f"Error: Analysis of '{file_path}' was interrupted.")
@@ -639,6 +641,9 @@ def analyse_file(file_path, cwd, options, output):
         return {}
     except UnicodeDecodeError:
         print(f"Error: Unable to decode '{file_path}'.")
+        return {}
+    except KeyError as e:
+        print(f"Error: Unable to read file {str(e)}, not part of ruleset in options.")
         return {}
     except Exception as e:
         print(f"Error: An unexpected error occurred while analyzing '{file_path}': {str(e)}")
@@ -752,19 +757,21 @@ if __name__ == "__main__":
         # new_directory_name = time.strftime("%H-%M-%S-%d-%m-%Y")
         
         # new_directory_name = time.strftime("%I-%M-%S %p %d-%m-%Y") # without UTC
-
-        new_directory_path = Path(cwd, time_of_analysis)
-        os.makedirs(new_directory_path, exist_ok=True)
-        shutil.copyfile(Path('./icons/malwhere.png'), new_directory_path / 'malwhere.png')
-        json_create(new_directory_path)
-        json_update(output, new_directory_path)
         try:
-            with open(Path("./icons/icons.json")) as icons_json:
-                icons = json.load(icons_json)
-            
-        except:
-            print("error loading icons.json. Please check the file and ensure it is correct")
-        generate_html_table(output, icons,args.path, new_directory_path, time_of_analysis, description_categories)
-        create_pie_chart(new_directory_path, output)
+            new_directory_path = Path(cwd, time_of_analysis)
+            os.makedirs(new_directory_path, exist_ok=True)
+            shutil.copyfile(Path('./icons/Malwhere_logo.png'), new_directory_path / 'Malwhere_logo.png')
+            json_create(new_directory_path)
+            json_update(output, new_directory_path)
+            try:
+                with open(Path("./icons/icons.json")) as icons_json:
+                    icons = json.load(icons_json)
+                
+            except:
+                print("error loading icons.json. Please check the file and ensure it is correct")
+            generate_html_table(output, icons,args.path, new_directory_path, time_of_analysis, description_categories)
+            create_pie_chart(new_directory_path, output)
+        except Exception as e:
+            print(f"Error: {str(e)}")
     elif args.subcommand == "modify-rules":
         update_rules()
