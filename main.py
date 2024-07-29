@@ -21,21 +21,18 @@ import matplotlib.patches as mpatches
 import matplotlib.colors as mcolors
 import seaborn as sns
 
-# def get_current_time():
-#     return time.strftime("%H-%M-%S-%d-%m-%Y")
 
-# def get_identifier_from_path(path):
-#     parts = path.split(os.sep)
-#     parts = [part for part in parts if part]
-#     return parts[-2] if len(parts) > 1 else parts[-1]
+def check_folders(directory, options):
+    '''
+    Checks iteratively through specified directory and executes analyse_file function on all files. Creates keys for the output dictionary.
 
-# def get_unique_directory_name(base_name, parent_directory="."):
-#     current_time = time.strftime("%H-%M-%S-%d-%m-%Y")
-#     return current_time
+    Parameters:
+        directory (string): String of directory path
+        cwd (string): String of current working directory
 
-def check_folders(directory, cwd, options):
-    first_iteration = True
-    android_manifest_found = False
+    Returns:
+        output (dictionary): Dictionary of all flaggd strings
+    '''
     path_to_json = './rules/'
     json_files = [("./rules/" + pos_json) for pos_json in os.listdir(path_to_json) if pos_json.endswith('.json')]
     output = {}
@@ -59,12 +56,10 @@ def check_folders(directory, cwd, options):
             except:
                 extension = None
             if filename == "AndroidManifest.xml" or extension == "java" or extension == "smali":
-                if filename == "AndroidManifest.xml":
-                    android_manifest_found = True
                 file_paths.append(os.path.join(path, filename))
 
     with ThreadPoolExecutor(max_workers=8) as executor:  # Adjust the number of workers as needed
-        futures = {executor.submit(analyse_file, file_path, cwd, options, output): file_path for file_path in file_paths}
+        futures = {executor.submit(analyse_file, file_path, options, output): file_path for file_path in file_paths}
         for future in as_completed(futures):
             file_path = futures[future]
             try:
@@ -76,6 +71,17 @@ def check_folders(directory, cwd, options):
     return output
 
 def create_output(ruleset, ruleset_name, output):
+    '''
+    creates key for ruleset.
+
+    Parameters:
+        ruleset (list): list of rules
+        ruleset_name (string): name of ruleset
+        output (dictionary): Dictionary of all flaggd strings
+
+    Returns:
+        output (dictionary): Dictionary of all flaggd strings
+    '''
     output[ruleset_name] = {}
     for pattern in ruleset:
         if (ruleset_name =="code apis"):
@@ -84,17 +90,45 @@ def create_output(ruleset, ruleset_name, output):
     return output
 
 def json_update(output, new_directory_path):
-    current_time = time.strftime("%H-%M-%S-%d-%m-%Y")
+    '''
+    updates the json file containing the flagged strings
+
+    Parameters:
+        output (dictionary): Dictionary of all flaggd strings
+        new_directory_path (Path): Pathlib object of path that the analysis will be contained in
+
+    Returns:
+        null
+    '''
     with open(os.path.join(new_directory_path, "flagged_files.json"), "w+") as outfile:
         json.dump(output, outfile, indent=1)
 
 def json_create(new_directory_path):
-    current_time = time.strftime("%H-%M-%S-%d-%m-%Y")
+    '''
+    creates json file for containin the flagged strings
+
+    Parameters:
+        new_directory_path (Path): Pathlib object of path that the analysis will be contained in
+
+    Returns:
+        null
+    '''
     with open(os.path.join(new_directory_path, "flagged_files.json"), "w+") as outfile:
         json.dump({}, outfile)
 
 def decompile(apk_path, cwd, method, outputpath):
-    
+    '''
+    Decompiles the APK based on the chosen method
+
+    Parameters:
+        apk_path (string): String of the directory of the specified APK
+        cwd (string): String of current working directory
+        method (string): String of the chosen language to be decompiled into (smali/java)
+        outputpath (string): String of the directory to be outputted to
+
+    Returns:
+        null
+    '''
     if outputpath is None:
             outputpath = cwd
     if (Path(outputpath).is_dir()):
@@ -116,7 +150,7 @@ def decompile(apk_path, cwd, method, outputpath):
             proc = subprocess.run([os.path.normpath(cwd + "/decompile.sh"), apk_path, outputpath, method], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         elif sys.platform == "win32":
-            process = subprocess.Popen([os.path.normpath(cwd + "/decompile.bat"), apk_path, outputpath, method], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = subprocess.run([os.path.normpath(cwd + "/decompile.bat"), apk_path, outputpath, method], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             # process = subprocess.Popen([os.path.normpath(cwd + "decompile.bat"), directory], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process.wait()  # Wait for process to complete.
         #try:
@@ -159,6 +193,16 @@ def decompile(apk_path, cwd, method, outputpath):
         print(f"Error: An unexpected error occurred during decompilation: {str(e)}")
 
 def create_pie_chart(output_directory, data):
+    '''
+    Creates pie chart of the flagged strings of each category
+
+    Parameters:
+        output_directory (string): Pathlib object of path to be outputted to
+        data (dictionary): Dictionary of all flaggd strings
+
+    Returns:
+        null
+    '''
     sub_categories_apis_numbers = []
     main_catergories_numbers = []
     main_categories_label = []
@@ -232,6 +276,18 @@ def create_pie_chart(output_directory, data):
             
 
 def generate_html_categories(data, icons, content, current_category, time_of_analysis):
+    '''
+    Generate html page of category
+
+    Parameters:
+        data (dictionary): Dictionary of all flaggd strings
+        icons (dictionary): dictionary of the icons to embed into the html page
+        current_category (string): String of the category being made
+        time_of_analysis (string): String of the time of analysis
+
+    Returns:
+        null
+    '''
     #scripts
     category_html = '<html><head><title>Flagged Results</title>\n'\
         '<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous"></script>\n'\
@@ -314,7 +370,6 @@ def generate_html_categories(data, icons, content, current_category, time_of_ana
             category_html += '                          </div>\n'
             category_html += '                      </div>\n'
         category_html += '                  </div>\n'
-        #category_html += '                  <style>.accordion {--bs-accordion-btn-color: #ffffff;--bs-accordion-btn-bg:  #ffffff;--bs-accordion-active-color: #8ccd00;--bs-accordion-active-bg: #2a2a2a;} .accordion-button:after {background: #2a2a2a;} .accordion-button:not(.collapsed):focus {background: #2a2a2a; color:#fdfffc;}</style>\n'
     
     else:
         category_html += '                  <div class="container-fluid text-center "><div class="row"><div class="col-2 border py-3 break-all">File Name and Line Number</div><div class="col-6 border py-3 break-all">Details</div><div class="col-2 border py-3 break-all">Legitimate Use</div><div class="col-2 border py-3 break-all">Abuse</div></div>\n'
@@ -330,7 +385,18 @@ def generate_html_categories(data, icons, content, current_category, time_of_ana
     return category_html
 
 def generate_html_table(data, icons, directory, output_directory, time_of_analysis, description_categories):
-    
+    '''
+    Generate html of the main page
+
+    Parameters:
+        data (dictionary): Dictionary of all flaggd strings
+        icons (dictionary): dictionary of the icons to embed into the html page
+        current_category (string): String of the category being made
+        time_of_analysis (string): String of the time of analysis
+        description_categories (dictionary): Dictionary of the descriptions of the categories
+    Returns:
+        null
+    '''
     #check for file meta data
     try:
         with open(Path(directory + "/file_stat.json"), "rb") as file:
@@ -466,10 +532,29 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
 
     
 def load_json(file_path):
+    '''
+    Loads json file
+
+    Parameters:
+        file_path (string): String of file path
+
+    Returns:
+        json.load(file) (json): json object of file contents
+    '''
     with open(file_path, 'r') as file:
         return json.load(file)
 
 def save_json(file_path, data):
+    '''
+    Saves json data
+
+    Parameters:
+        file_path (string): String of file path
+        data (dictionary): data to be saved into json file
+
+    Returns:
+        null
+    '''
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
@@ -525,6 +610,15 @@ def add_new_rule(file_path):
     print(f"New rule added to {file_path}.")
 
 def remove_rule(file_path):
+    '''
+    Removes rule from ruleset
+
+    Parameters:
+        file_path (string): String of file path
+
+    Returns:
+        null
+    '''
     data = load_json(file_path)
     suspicious = input("Enter the suspicious item to remove: ").strip()
     
@@ -538,6 +632,15 @@ def remove_rule(file_path):
         print(f"The suspicious item '{suspicious}' was not found.")
 
 def modify_rule(file_path):
+    '''
+    Modifies rules from the malware
+
+    Parameters:
+        file_path (string): String of file path
+
+    Returns:
+        null
+    '''
     data = load_json(file_path)
     suspicious = input("Enter the suspicious item to modify: ").strip()
     
@@ -582,7 +685,14 @@ def modify_rule(file_path):
         print(f"The suspicious item '{suspicious}' was not found.")
 
 def update_rules():
+    '''
+    Modifies rules of the ruleset
 
+    Parameters:
+
+    Returns:
+        null
+    '''
     rules_folder = "rules"
     if not os.path.exists(rules_folder):
         print(f"The folder '{rules_folder}' does not exist.")
@@ -618,13 +728,24 @@ def update_rules():
     except ValueError:
         print("Invalid input. Exiting...")
 
-def analyse_file(file_path, cwd, options, output):
+def analyse_file(file_path, options, output):
+    '''
+    analyze the file and catch errors
+
+    Parameters:
+        file_path (string): String of file path
+        options (dictionary): Dictionary of the options of the rulesets
+        output (dictionary): Dictionary of all flaggd strings
+
+    Returns:
+        null
+    '''
     try:
         if file_path.split(".")[-1] == "apk":
             print(f"Error: APK file '{file_path}' detected. Please decompile the APK first before analysis.")
             return {}
         # print(f"Analysing {file_path}")
-        result = rules.scan_file(file_path, cwd, options, output)
+        result = rules.scan_file(file_path, options, output)
         # print(f"Successfully analysed {file_path}")
         return result
     except FileNotFoundError as e: 
@@ -648,32 +769,6 @@ def analyse_file(file_path, cwd, options, output):
     except Exception as e:
         print(f"Error: An unexpected error occurred while analyzing '{file_path}': {str(e)}")
         return {}
-
-# def analyse_file(file_path, cwd, options, output):
-#     try:
-#         with open(file_path, 'rb') as file:
-#             # raw_data = file.read()
-#             # detected_encoding = chardet.detect(raw_data)['encoding']
-#             raw_data = file.read(10000)
-#         detected_encoding = chardet.detect(raw_data)['encoding']
-
-#         if not detected_encoding:
-#             detected_encoding = 'utf-8'
-
-#         try:
-#             with open(file_path, 'r', encoding=detected_encoding) as file:
-#                 pass
-#         except UnicodeDecodeError:
-#             print(f"Unable to decode {file_path} with {detected_encoding} encoding.")
-
-#         # print(f"Analysing {file_path}")
-#         result = rules.scan_file(file_path, cwd, options, output)
-#         # print(f"Successfully analysed {file_path}")
-#         return result
-
-#     except Exception as e:
-#         print(f"Error in analysing {file_path}: {e}")
-#         return {}
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="malwh", description="APK Analysis CLI Tool")
@@ -730,7 +825,7 @@ if __name__ == "__main__":
                 "./rules/intents.json":True,
                 "./rules/logging.json":True,
             }
-            output = check_folders(args.path, cwd, options)
+            output = check_folders(args.path, options)
             non_verbose_mode = False
         elif non_verbose_mode and (args.permissions or args.urls or args.apis or args.intents or args.logging):
             options = {
@@ -740,7 +835,7 @@ if __name__ == "__main__":
                 "./rules/intents.json":args.intents,
                 "./rules/logging.json":args.logging,
             }
-            output = check_folders(args.path, cwd, options)
+            output = check_folders(args.path, options)
         else:
             print("Invalid Command or Option:\nError: Invalid command or option specified. Use 'malwh --help' to see available commands and options.")
 

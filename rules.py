@@ -9,6 +9,17 @@ import fileinput
 
 
 def flag_suspicious_patterns(content, ruleset, ruleset_name, output, file_path):
+    '''
+    Analyzes file for any matches in rulesets
+
+    Parameters:
+        content (string): String of entire file contents
+        ruleset (list): List of ruleset
+        ruleset_name (string): name of ruleset
+
+    Returns:
+        output (dictionary): Dictionary of all flaggd strings
+    '''
     if (ruleset_name !="code apis" and file_path not in output[ruleset_name]):
         output[ruleset_name][file_path] = []
     for pattern in ruleset:
@@ -52,8 +63,18 @@ def flag_suspicious_patterns(content, ruleset, ruleset_name, output, file_path):
 
     return output
 
-def scan_file(file_path, cwd, options, output):
-    file_name = file_path.split("/")[-1]
+def scan_file(file_path, options, output):
+    '''
+    Analyzes file for any matches in rulesets
+
+    Parameters:
+        file_path (string): String of file path
+        options (dictionary): Dictionary of the options of the rulesets
+        output (dictionary): Dictionary of all flaggd strings
+
+    Returns:
+        output (dictionary): Dictionary of all flaggd strings
+    '''
     with open(file_path, 'rb') as file:
         content = file.read()
     content = content.decode('utf-8', errors='ignore')
