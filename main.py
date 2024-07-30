@@ -488,7 +488,7 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
     main_html +='                   <div class="col">\n'\
                 '                       <div class="card category_card px-0" style="height:100%;width:100%;">\n'\
                 '                           <div class="card-body px-0 h-100">\n'\
-                f'                              <h5 class="card-title px-5"><a href="./" class="border border-2 py-2 px-3 rounded-pill" style="text-decoration: none;color: #3f248d;border-color:#3f248d !important;">{icons[category]}Pie Chart of Categories</a></h5>\n'\
+                f'                              <h5 class="card-title px-5"><a href="./main.html" class="border border-2 py-2 px-3 rounded-pill streched-link" style="text-decoration: none;color: #3f248d;border-color:#3f248d !important;">{icons[category]}Pie Chart of Categories</a></h5>\n'\
                 f'                               <img class="img-fluid" src="{output_directory / "piechart.png"}">\n'\
                 '                           </div>\n'\
                 '                       </div>\n'\
@@ -498,7 +498,7 @@ def generate_html_table(data, icons, directory, output_directory, time_of_analys
         main_html +='                   <div class="col">\n'\
                     '                       <div class="card category_card" style="height: 100%;width:100%;">\n'\
                     '                           <div class="card-body">\n'\
-                    f'                              <h5 class="card-title"><a href="./{category}.html" class="border border-2 py-2 px-3 rounded-pill" style="text-decoration: none;color: #3f248d;border-color:#3f248d !important;">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'\
+                    f'                              <h5 class="card-title"><a href="./{category}.html" class="border border-2 py-2 px-3 rounded-pill stretched-link" style="text-decoration: none;color: #3f248d;border-color:#3f248d !important;">{icons[category]}{" ".join(word[0].upper() + word[1:] for word in category.split())}</a></h5>\n'\
                     f'                               <p class="card-text pt-2">{description_categories[category]}</p>\n'\
                     '                           </div>\n'\
                     '                       </div>\n'\
