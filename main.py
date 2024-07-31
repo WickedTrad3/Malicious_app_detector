@@ -350,7 +350,7 @@ def generate_html_categories(data, icons, content, current_category, time_of_ana
                     '       <h2 class="border-bottom p-2 m-0">FYP group 6</h2>'\
                     '           <div style="background-color:#f8fafc;" class="px-0 pt-4 h-100">\n'\
                         '              <div style="max-width: 2000px;" class="container-fluid ms-0">\n'\
-                        f'                  <h1 class="py-2 px-4">{current_category}</h1>\n'
+                        f'                  <h1 class="py-2 px-4">{" ".join(word[0].upper() + word[1:] for word in category.split())}</h1>\n'
 
     if (current_category == "code apis"):
         category_html += '                  <div class="accordion" id="accordionPanel">\n'
