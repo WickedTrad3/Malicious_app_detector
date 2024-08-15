@@ -171,7 +171,7 @@ def decompile(apk_path, cwd, method, outputpath):
         #os.stat.st_size gives size of file in bytes, so conversion to megabytes is needed
         #times by 100 to make math.floor round down to nearest integer, then divide back by 100 to get back the original file size, rounded down by 2 decimal places
         stat = {
-            "File Size": math.floor(os.stat(apk_path).st_size/1000000 * 100)/100,
+            "File Size": str(math.floor(os.stat(apk_path).st_size/1000000 * 100)/100) + "Mb",
             "MD5": digest.hexdigest(),
             "Package Name": package_name
         }
